@@ -32,9 +32,9 @@
                 {% for t in tipos %}
                 <tr {% if not t.activo %}class="row-inactive"{% endif %}>
                     <td data-label="Nombre"><strong>{{ t.nombre }}</strong></td>
-                    <td data-label="Precio">$ {{ t.precio | int }}</td>
-                    <td data-label="Médico (70%)">$ {{ (t.precio * 7 / 10) | int }}</td>
-                    <td data-label="Consultorio (30%)">$ {{ (t.precio * 3 / 10) | int }}</td>
+                    <td data-label="Precio"><span style="white-space:nowrap">$ {{ t.precio | int }}</span></td>
+                    <td data-label="Médico (70%)"><span style="white-space:nowrap">$ {{ (t.precio * 7 / 10) | int }}</span></td>
+                    <td data-label="Consultorio (30%)"><span style="white-space:nowrap">$ {{ (t.precio * 3 / 10) | int }}</span></td>
                     <td data-label="Estado">
                         {% if t.activo %}
                         <span class="badge badge-success">Activo</span>
