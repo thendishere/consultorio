@@ -16,7 +16,7 @@
     {% endif %}
 
     <!-- Formulario para agregar horario -->
-    <div class="admin-card" style="max-width:600px">
+    <div class="admin-card" style="max-width:620px">
         <h2 class="admin-card-title" style="margin-bottom:1.25rem">Agregar horario</h2>
         <form method="post" action="/admin/medicos/{{ medico.id }}/disponibilidad/agregar" class="disp-form">
             {{ csrf_input(request) }}
@@ -26,6 +26,9 @@
                     <label for="especialidad_id">Especialidad *</label>
                     <select id="especialidad_id" name="especialidad_id" class="form-select" required>
                         <option value="">— Especialidad —</option>
+                        {% if medico.es_ecografo %}
+                        <option value="ecografo">⚡ Ecógrafo</option>
+                        {% endif %}
                         {% for esp in medico.especialidades %}
                         <option value="{{ esp.id }}">{{ esp.nombre }}</option>
                         {% endfor %}
@@ -74,7 +77,13 @@
                 {% for d in disps %}
                 <tr>
                     <td><strong>{{ dias[d.dia_semana] }}</strong></td>
-                    <td>{{ d.especialidad.nombre }}</td>
+                    <td>
+                        {% if d.es_ecografia %}
+                        <span class="badge badge-ecografo">⚡ Ecógrafo</span>
+                        {% else %}
+                        {{ d.especialidad.nombre if d.especialidad else '—' }}
+                        {% endif %}
+                    </td>
                     <td>{{ d.hora_inicio.strftime('%H:%M') }}</td>
                     <td>{{ d.hora_fin.strftime('%H:%M') }}</td>
                     <td>
@@ -97,9 +106,4 @@
     </div>
 
 </div>
-{% endblock %}
-{% block extra_scripts %}
-<script>
-// Pasar enumerate a Jinja2 no funciona directamente, ya está manejado en el template
-</script>
 {% endblock %}

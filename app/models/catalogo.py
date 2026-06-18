@@ -46,7 +46,8 @@ class Disponibilidad(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     medico_id = Column(Integer, ForeignKey("medicos.id", ondelete="CASCADE"), nullable=False)
-    especialidad_id = Column(Integer, ForeignKey("especialidades.id", ondelete="CASCADE"), nullable=False)
+    especialidad_id = Column(Integer, ForeignKey("especialidades.id", ondelete="SET NULL"), nullable=True)
+    es_ecografia = Column(Boolean, default=False)  # True cuando el turno es para ecografías
     dia_semana = Column(Integer, nullable=False)  # 0=Lunes … 6=Domingo
     hora_inicio = Column(Time, nullable=False)
     hora_fin = Column(Time, nullable=False)

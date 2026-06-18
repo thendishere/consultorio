@@ -56,20 +56,22 @@ async def crear(
     request: Request,
     user_id: int = Form(...),
     matricula: str = Form(""),
-    es_ecografo: str = Form("no"),
-    especialidad_ids: List[int] = Form([]),
+    selected_ids: List[str] = Form([]),
     db: Session = Depends(get_db),
 ):
     admin = _require_superadmin(request, db)
     usuarios = _usuarios_sin_perfil(db)
     especialidades = db.query(Especialidad).filter(Especialidad.activa == True).order_by(Especialidad.nombre).all()
 
+    es_ecografo = "ecografo" in selected_ids
+    esp_ids = [int(x) for x in selected_ids if x != "ecografo"]
+
     errors = []
     u = db.query(User).filter(User.id == user_id, User.role == "medico").first()
     if not u:
         errors.append("Usuario inválido.")
-    if not es_ecografo == "si" and not especialidad_ids:
-        errors.append("Asigná al menos una especialidad, o marcá al médico como ecógrafo.")
+    if not es_ecografo and not esp_ids:
+        errors.append("Seleccioná al menos una especialidad o la opción Ecógrafo.")
 
     if errors:
         return templates.TemplateResponse(
@@ -79,11 +81,11 @@ async def crear(
             status_code=422,
         )
 
-    esps = db.query(Especialidad).filter(Especialidad.id.in_(especialidad_ids)).all()
+    esps = db.query(Especialidad).filter(Especialidad.id.in_(esp_ids)).all()
     medico = Medico(
         user_id=user_id,
         matricula=matricula.strip() or None,
-        es_ecografo=(es_ecografo == "si"),
+        es_ecografo=es_ecografo,
         especialidades=esps,
     )
     db.add(medico)
@@ -100,7 +102,9 @@ async def editar_page(mid: int, request: Request, db: Session = Depends(get_db))
     usuarios = _usuarios_sin_perfil(db, excluir_id=mid)
     usuarios.append(medico.user)
     especialidades = db.query(Especialidad).filter(Especialidad.activa == True).order_by(Especialidad.nombre).all()
-    esp_ids = [e.id for e in medico.especialidades]
+    esp_ids = [str(e.id) for e in medico.especialidades]
+    if medico.es_ecografo:
+        esp_ids.append("ecografo")
     return templates.TemplateResponse(request, "admin/medicos/form.html", {
         "user": user, "accion": "Editar", "medico": medico,
         "usuarios": usuarios, "especialidades": especialidades,
@@ -113,8 +117,7 @@ async def editar(
     mid: int,
     request: Request,
     matricula: str = Form(""),
-    es_ecografo: str = Form("no"),
-    especialidad_ids: List[int] = Form([]),
+    selected_ids: List[str] = Form([]),
     db: Session = Depends(get_db),
 ):
     admin = _require_superadmin(request, db)
@@ -122,22 +125,28 @@ async def editar(
     if not medico:
         raise HTTPException(status_code=404)
 
+    es_ecografo = "ecografo" in selected_ids
+    esp_ids = [int(x) for x in selected_ids if x != "ecografo"]
+
     especialidades_all = db.query(Especialidad).filter(Especialidad.activa == True).order_by(Especialidad.nombre).all()
     errors = []
-    if es_ecografo != "si" and not especialidad_ids:
-        errors.append("Asigná al menos una especialidad, o marcá al médico como ecógrafo.")
+    if not es_ecografo and not esp_ids:
+        errors.append("Seleccioná al menos una especialidad o la opción Ecógrafo.")
     if errors:
+        esp_ids_sel = [e.id for e in medico.especialidades]
+        if medico.es_ecografo:
+            esp_ids_sel = ["ecografo"] + [str(i) for i in esp_ids_sel]
         return templates.TemplateResponse(
             request, "admin/medicos/form.html",
             {"user": admin, "accion": "Editar", "medico": medico,
              "usuarios": [medico.user], "especialidades": especialidades_all,
-             "esp_ids": especialidad_ids, "dias": DIAS, "errors": errors},
+             "esp_ids": esp_ids_sel, "dias": DIAS, "errors": errors},
             status_code=422,
         )
 
     medico.matricula = matricula.strip() or None
-    medico.es_ecografo = (es_ecografo == "si")
-    medico.especialidades = db.query(Especialidad).filter(Especialidad.id.in_(especialidad_ids)).all()
+    medico.es_ecografo = es_ecografo
+    medico.especialidades = db.query(Especialidad).filter(Especialidad.id.in_(esp_ids)).all()
     db.commit()
     return RedirectResponse(url="/admin/medicos?saved=1", status_code=302)
 
@@ -174,7 +183,7 @@ async def disponibilidad_page(mid: int, request: Request, db: Session = Depends(
 async def agregar_disponibilidad(
     mid: int,
     request: Request,
-    especialidad_id: int = Form(...),
+    especialidad_id: str = Form(...),
     dia_semana: int = Form(...),
     hora_inicio: str = Form(...),
     hora_fin: str = Form(...),
@@ -193,9 +202,13 @@ async def agregar_disponibilidad(
     if hf <= hi:
         raise HTTPException(status_code=422, detail="La hora de fin debe ser posterior a la de inicio.")
 
+    es_ecografia = (especialidad_id == "ecografo")
+    esp_id = None if es_ecografia else int(especialidad_id)
+
     disp = Disponibilidad(
         medico_id=mid,
-        especialidad_id=especialidad_id,
+        especialidad_id=esp_id,
+        es_ecografia=es_ecografia,
         dia_semana=dia_semana,
         hora_inicio=hi,
         hora_fin=hf,
