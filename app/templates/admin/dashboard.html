@@ -56,17 +56,17 @@
                 {% for u in usuarios_recientes %}
                 {% if u.role != "superadmin" %}
                 <tr>
-                    <td>{{ u.full_name or u.username }}</td>
-                    <td class="text-muted">{{ u.email }}</td>
-                    <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
-                    <td>
+                    <td data-label="Nombre">{{ u.full_name or u.username }}</td>
+                    <td data-label="Email" class="text-muted">{{ u.email }}</td>
+                    <td data-label="Rol"><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+                    <td data-label="Estado">
                         {% if u.is_active %}
                         <span class="badge badge-success">Activo</span>
                         {% else %}
                         <span class="badge badge-muted">Inactivo</span>
                         {% endif %}
                     </td>
-                    <td class="text-muted text-sm">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</td>
+                    <td data-label="Creado" class="text-muted text-sm">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</td>
                 </tr>
                 {% endif %}
                 {% endfor %}
