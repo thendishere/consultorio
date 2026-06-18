@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Especialidades — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Especialidades</h1>
+            <p class="admin-subtitle">Definí las especialidades y la duración de cada turno</p>
+        </div>
+        <a href="/admin/especialidades/crear" class="btn btn-primary">+ Nueva especialidad</a>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados.</div>
+    {% endif %}
+
+    <div class="admin-card">
+        {% if especialidades %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Duración del turno</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for esp in especialidades %}
+                <tr {% if not esp.activa %}class="row-inactive"{% endif %}>
+                    <td><strong>{{ esp.nombre }}</strong></td>
+                    <td>{{ esp.duracion_turno }} min</td>
+                    <td>
+                        {% if esp.activa %}
+                        <span class="badge badge-success">Activa</span>
+                        {% else %}
+                        <span class="badge badge-muted">Inactiva</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="/admin/especialidades/{{ esp.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
+                            <form method="post" action="/admin/especialidades/{{ esp.id }}/toggle-activa" style="display:inline">
+                                {{ csrf_input(request) }}
+                                <button type="submit" class="btn btn-outline btn-xs">
+                                    {% if esp.activa %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="/admin/especialidades/{{ esp.id }}/eliminar" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar la especialidad {{ esp.nombre }}? Se eliminarán también sus disponibilidades.')">
+                                {{ csrf_input(request) }}
+                                <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🩺</div>
+            <p>No hay especialidades creadas todavía.</p>
+            <a href="/admin/especialidades/crear" class="btn btn-primary" style="margin-top:.75rem">Crear primera especialidad</a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

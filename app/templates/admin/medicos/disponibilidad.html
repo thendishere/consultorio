@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Horarios — {{ medico.user.full_name }} — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Horarios de atención</h1>
+            <p class="admin-subtitle">{{ medico.user.full_name or medico.user.username }}</p>
+        </div>
+        <a href="/admin/medicos" class="btn btn-outline">← Volver a médicos</a>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados.</div>
+    {% endif %}
+
+    <!-- Formulario para agregar horario -->
+    <div class="admin-card" style="max-width:600px">
+        <h2 class="admin-card-title" style="margin-bottom:1.25rem">Agregar horario</h2>
+        <form method="post" action="/admin/medicos/{{ medico.id }}/disponibilidad/agregar" class="disp-form">
+            {{ csrf_input(request) }}
+
+            <div class="disp-grid">
+                <div class="form-group">
+                    <label for="especialidad_id">Especialidad *</label>
+                    <select id="especialidad_id" name="especialidad_id" class="form-select" required>
+                        <option value="">— Especialidad —</option>
+                        {% for esp in medico.especialidades %}
+                        <option value="{{ esp.id }}">{{ esp.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dia_semana">Día *</label>
+                    <select id="dia_semana" name="dia_semana" class="form-select" required>
+                        {% for i, dia in enumerate(dias) %}
+                        <option value="{{ i }}">{{ dia }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="hora_inicio">Desde *</label>
+                    <input type="time" id="hora_inicio" name="hora_inicio" required class="form-select">
+                </div>
+
+                <div class="form-group">
+                    <label for="hora_fin">Hasta *</label>
+                    <input type="time" id="hora_fin" name="hora_fin" required class="form-select">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:.75rem">Agregar horario</button>
+        </form>
+    </div>
+
+    <!-- Horarios existentes -->
+    <div class="admin-card">
+        <h2 class="admin-card-title" style="margin-bottom:1.25rem">Horarios configurados</h2>
+        {% if disps %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th>Especialidad</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in disps %}
+                <tr>
+                    <td><strong>{{ dias[d.dia_semana] }}</strong></td>
+                    <td>{{ d.especialidad.nombre }}</td>
+                    <td>{{ d.hora_inicio.strftime('%H:%M') }}</td>
+                    <td>{{ d.hora_fin.strftime('%H:%M') }}</td>
+                    <td>
+                        <form method="post" action="/admin/medicos/{{ medico.id }}/disponibilidad/{{ d.id }}/eliminar"
+                              onsubmit="return confirm('¿Eliminar este horario?')">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state" style="padding:2rem 0">
+            <div class="empty-icon">📅</div>
+            <p>No hay horarios configurados todavía.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+// Pasar enumerate a Jinja2 no funciona directamente, ya está manejado en el template
+</script>
+{% endblock %}

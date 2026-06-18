@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Panel Admin — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Panel de Administración</h1>
+            <p class="admin-subtitle">Consultorio de la Amistad</p>
+        </div>
+        <a href="/admin/usuarios/crear" class="btn btn-primary">+ Nuevo usuario</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid-admin">
+        <div class="stat-card">
+            <div class="stat-card-icon">👨‍⚕️</div>
+            <div class="stat-card-value">{{ stats.medicos }}</div>
+            <div class="stat-card-label">Médicos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon">🗂</div>
+            <div class="stat-card-value">{{ stats.secretarios }}</div>
+            <div class="stat-card-label">Secretarios</div>
+        </div>
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-icon">✅</div>
+            <div class="stat-card-value">{{ stats.activos }}</div>
+            <div class="stat-card-label">Usuarios activos</div>
+        </div>
+        <div class="stat-card stat-card-muted">
+            <div class="stat-card-icon">⛔</div>
+            <div class="stat-card-value">{{ stats.inactivos }}</div>
+            <div class="stat-card-label">Usuarios inactivos</div>
+        </div>
+    </div>
+
+    <!-- Usuarios recientes -->
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h2 class="admin-card-title">Últimos usuarios registrados</h2>
+            <a href="/admin/usuarios" class="btn btn-outline btn-sm">Ver todos</a>
+        </div>
+        {% if usuarios_recientes %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Creado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios_recientes %}
+                {% if u.role != "superadmin" %}
+                <tr>
+                    <td>{{ u.full_name or u.username }}</td>
+                    <td class="text-muted">{{ u.email }}</td>
+                    <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+                    <td>
+                        {% if u.is_active %}
+                        <span class="badge badge-success">Activo</span>
+                        {% else %}
+                        <span class="badge badge-muted">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted text-sm">{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted" style="padding:1rem 0">No hay usuarios registrados aún.</p>
+        {% endif %}
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="quick-actions">
+        <h2 class="admin-card-title" style="margin-bottom:1rem">Accesos rápidos</h2>
+        <div class="quick-actions-grid">
+            <a href="/admin/usuarios/crear" class="quick-card">
+                <div class="quick-card-icon">➕</div>
+                <div class="quick-card-label">Crear usuario</div>
+                <div class="quick-card-sub">Médico o secretario</div>
+            </a>
+            <a href="/admin/usuarios?rol=medico" class="quick-card">
+                <div class="quick-card-icon">👨‍⚕️</div>
+                <div class="quick-card-label">Ver médicos</div>
+                <div class="quick-card-sub">{{ stats.medicos }} registrados</div>
+            </a>
+            <a href="/admin/usuarios?rol=secretario" class="quick-card">
+                <div class="quick-card-icon">🗂</div>
+                <div class="quick-card-label">Ver secretarios</div>
+                <div class="quick-card-sub">{{ stats.secretarios }} registrados</div>
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

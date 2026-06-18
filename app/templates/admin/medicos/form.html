@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ accion }} médico — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">{{ accion }} médico</h1>
+        </div>
+        <a href="/admin/medicos" class="btn btn-outline">← Volver</a>
+    </div>
+
+    {% if errors %}
+    <div class="alert alert-error">
+        <span class="alert-icon">⚠</span>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <div class="admin-card" style="max-width:560px">
+        <form method="post" class="admin-form">
+            {{ csrf_input(request) }}
+
+            {% if accion == "Crear" %}
+            <div class="form-group">
+                <label for="user_id">Usuario *</label>
+                <select id="user_id" name="user_id" class="form-select" required>
+                    <option value="">— Seleccioná un usuario —</option>
+                    {% for u in usuarios %}
+                    <option value="{{ u.id }}">{{ u.full_name or u.username }} ({{ u.email }})</option>
+                    {% endfor %}
+                </select>
+                <small>Solo aparecen usuarios con rol "médico" sin perfil asignado aún.</small>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" value="{{ medico.user.full_name or medico.user.username }}" disabled class="input-disabled">
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="matricula">Matrícula <span class="optional">(opcional)</span></label>
+                <input type="text" id="matricula" name="matricula"
+                       value="{{ medico.matricula if medico else '' }}"
+                       placeholder="Ej: MP 12345">
+            </div>
+
+            <div class="form-group">
+                <label>Especialidades</label>
+                {% if especialidades %}
+                <div class="checkbox-list">
+                    {% for esp in especialidades %}
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="especialidad_ids" value="{{ esp.id }}"
+                               {% if esp_ids and esp.id in esp_ids %}checked{% endif %}>
+                        <span>{{ esp.nombre }} <span class="text-muted">({{ esp.duracion_turno }} min)</span></span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-sm">No hay especialidades activas. <a href="/admin/especialidades/crear">Crear una</a>.</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-item" style="font-weight:600">
+                    <input type="checkbox" name="es_ecografo" value="si"
+                           {% if medico and medico.es_ecografo %}checked{% endif %}>
+                    <span>Es ecógrafo <span class="text-muted">(realiza ecografías)</span></span>
+                </label>
+            </div>
+
+            <div style="display:flex;gap:.75rem;margin-top:.5rem">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    {% if accion == "Crear" %}Crear y configurar horarios →{% else %}Guardar cambios{% endif %}
+                </button>
+                <a href="/admin/medicos" class="btn btn-outline btn-lg">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

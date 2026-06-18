@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Usuarios — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Usuarios</h1>
+            <p class="admin-subtitle">Médicos y secretarios del consultorio</p>
+        </div>
+        <a href="/admin/usuarios/crear" class="btn btn-primary">+ Nuevo usuario</a>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados correctamente.</div>
+    {% endif %}
+
+    <!-- Filtros -->
+    <form method="get" class="filter-bar">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o email..." class="filter-input">
+        <select name="rol" class="filter-select">
+            <option value="">Todos los roles</option>
+            <option value="medico" {% if rol == "medico" %}selected{% endif %}>Médicos</option>
+            <option value="secretario" {% if rol == "secretario" %}selected{% endif %}>Secretarios</option>
+        </select>
+        <button type="submit" class="btn btn-outline">Filtrar</button>
+        {% if q or rol %}
+        <a href="/admin/usuarios" class="btn btn-outline">✕ Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div class="admin-card">
+        {% if users %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>WhatsApp</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr {% if not u.is_active %}class="row-inactive"{% endif %}>
+                    <td><strong>{{ u.full_name or u.username }}</strong></td>
+                    <td class="text-muted">{{ u.email }}</td>
+                    <td class="text-muted">{{ u.whatsapp or '—' }}</td>
+                    <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+                    <td>
+                        {% if u.is_active %}
+                        <span class="badge badge-success">Activo</span>
+                        {% else %}
+                        <span class="badge badge-muted">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="/admin/usuarios/{{ u.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
+                            <form method="post" action="/admin/usuarios/{{ u.id }}/toggle-activo" style="display:inline">
+                                {{ csrf_input(request) }}
+                                <button type="submit" class="btn btn-outline btn-xs">
+                                    {% if u.is_active %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="/admin/usuarios/{{ u.id }}/eliminar" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar a {{ u.full_name or u.username }}? Esta acción no se puede deshacer.')">
+                                {{ csrf_input(request) }}
+                                <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">👥</div>
+            <p>No hay usuarios que coincidan con la búsqueda.</p>
+            <a href="/admin/usuarios/crear" class="btn btn-primary" style="margin-top:.75rem">Crear primer usuario</a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
