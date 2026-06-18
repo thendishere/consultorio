@@ -1,5 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Horarios — {{ medico.user.full_name }} — Consultorio de la Amistad{% endblock %}
+{% block extra_head %}
+<style>
+.time-picker {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.time-picker select {
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: .9rem .75rem;
+    color: var(--text-primary);
+    font-size: var(--font-base);
+    font-family: inherit;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color var(--transition);
+    width: auto;
+}
+.time-picker select:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px rgba(91,164,207,.12); }
+.time-picker-sep {
+    font-size: var(--font-xl);
+    font-weight: 900;
+    color: var(--text-muted);
+    margin: 0 .1rem;
+    line-height: 1;
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="admin-layout">
 
@@ -15,12 +47,12 @@
     <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados.</div>
     {% endif %}
 
-    <!-- Formulario para agregar horario -->
-    <div class="admin-card" style="max-width:620px">
-        <h2 class="admin-card-title" style="margin-bottom:1.25rem">Agregar horario</h2>
-        <form method="post" action="/admin/medicos/{{ medico.id }}/disponibilidad/agregar" class="disp-form">
+    <div class="admin-card" style="max-width:640px">
+        <h2 class="admin-card-title" style="margin-bottom:1.5rem">Agregar horario</h2>
+        <form method="post" action="/admin/medicos/{{ medico.id }}/disponibilidad/agregar" class="admin-form" id="dispForm">
             {{ csrf_input(request) }}
 
+            <!-- Especialidad y Día -->
             <div class="disp-grid">
                 <div class="form-group">
                     <label for="especialidad_id">Especialidad *</label>
@@ -43,19 +75,48 @@
                         {% endfor %}
                     </select>
                 </div>
+            </div>
 
+            <!-- Horarios -->
+            <div class="disp-grid">
                 <div class="form-group">
-                    <label for="hora_inicio">Desde *</label>
-                    <input type="time" id="hora_inicio" name="hora_inicio" required class="form-select">
+                    <label>Desde *</label>
+                    <div class="time-picker">
+                        <select name="_hora_inicio_h" id="hi_h" aria-label="Hora inicio">
+                            {% for h in range(0, 24) %}
+                            <option value="{{ '%02d'|format(h) }}" {% if h == 8 %}selected{% endif %}>{{ '%02d'|format(h) }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="time-picker-sep">:</span>
+                        <select name="_hora_inicio_m" id="hi_m" aria-label="Minutos inicio">
+                            {% for m in [0, 15, 30, 45] %}
+                            <option value="{{ '%02d'|format(m) }}">{{ '%02d'|format(m) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="hora_inicio" id="hora_inicio_val">
                 </div>
 
                 <div class="form-group">
-                    <label for="hora_fin">Hasta *</label>
-                    <input type="time" id="hora_fin" name="hora_fin" required class="form-select">
+                    <label>Hasta *</label>
+                    <div class="time-picker">
+                        <select name="_hora_fin_h" id="hf_h" aria-label="Hora fin">
+                            {% for h in range(0, 24) %}
+                            <option value="{{ '%02d'|format(h) }}" {% if h == 12 %}selected{% endif %}>{{ '%02d'|format(h) }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="time-picker-sep">:</span>
+                        <select name="_hora_fin_m" id="hf_m" aria-label="Minutos fin">
+                            {% for m in [0, 15, 30, 45] %}
+                            <option value="{{ '%02d'|format(m) }}">{{ '%02d'|format(m) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="hora_fin" id="hora_fin_val">
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="margin-top:.75rem">Agregar horario</button>
+            <button type="submit" class="btn btn-primary btn-lg" style="margin-top:.5rem">Agregar horario</button>
         </form>
     </div>
 
@@ -76,17 +137,17 @@
             <tbody>
                 {% for d in disps %}
                 <tr>
-                    <td><strong>{{ dias[d.dia_semana] }}</strong></td>
-                    <td>
+                    <td data-label="Día"><strong>{{ dias[d.dia_semana] }}</strong></td>
+                    <td data-label="Especialidad">
                         {% if d.es_ecografia %}
                         <span class="badge badge-ecografo">⚡ Ecógrafo</span>
                         {% else %}
                         {{ d.especialidad.nombre if d.especialidad else '—' }}
                         {% endif %}
                     </td>
-                    <td>{{ d.hora_inicio.strftime('%H:%M') }}</td>
-                    <td>{{ d.hora_fin.strftime('%H:%M') }}</td>
-                    <td>
+                    <td data-label="Desde">{{ d.hora_inicio.strftime('%H:%M') }}</td>
+                    <td data-label="Hasta">{{ d.hora_fin.strftime('%H:%M') }}</td>
+                    <td data-label="">
                         <form method="post" action="/admin/medicos/{{ medico.id }}/disponibilidad/{{ d.id }}/eliminar"
                               onsubmit="return confirm('¿Eliminar este horario?')">
                             {{ csrf_input(request) }}
@@ -106,4 +167,16 @@
     </div>
 
 </div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.getElementById('dispForm').addEventListener('submit', function () {
+    var hh = document.getElementById('hi_h').value;
+    var hm = document.getElementById('hi_m').value;
+    var fh = document.getElementById('hf_h').value;
+    var fm = document.getElementById('hf_m').value;
+    document.getElementById('hora_inicio_val').value = hh + ':' + hm;
+    document.getElementById('hora_fin_val').value   = fh + ':' + fm;
+});
+</script>
 {% endblock %}

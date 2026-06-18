@@ -45,18 +45,18 @@
             <tbody>
                 {% for u in users %}
                 <tr {% if not u.is_active %}class="row-inactive"{% endif %}>
-                    <td><strong>{{ u.full_name or u.username }}</strong></td>
-                    <td class="text-muted">{{ u.email }}</td>
-                    <td class="text-muted">{{ u.whatsapp or '—' }}</td>
-                    <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
-                    <td>
+                    <td data-label="Nombre"><strong>{{ u.full_name or u.username }}</strong></td>
+                    <td data-label="Email" class="text-muted">{{ u.email }}</td>
+                    <td data-label="WhatsApp" class="text-muted">{{ u.whatsapp or '—' }}</td>
+                    <td data-label="Rol"><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+                    <td data-label="Estado">
                         {% if u.is_active %}
                         <span class="badge badge-success">Activo</span>
                         {% else %}
                         <span class="badge badge-muted">Inactivo</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="">
                         <div class="action-btns">
                             <a href="/admin/usuarios/{{ u.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
                             <form method="post" action="/admin/usuarios/{{ u.id }}/toggle-activo" style="display:inline">

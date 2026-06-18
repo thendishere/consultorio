@@ -29,16 +29,16 @@
             <tbody>
                 {% for esp in especialidades %}
                 <tr {% if not esp.activa %}class="row-inactive"{% endif %}>
-                    <td><strong>{{ esp.nombre }}</strong></td>
-                    <td>{{ esp.duracion_turno }} min</td>
-                    <td>
+                    <td data-label="Nombre"><strong>{{ esp.nombre }}</strong></td>
+                    <td data-label="Duración">{{ esp.duracion_turno }} min</td>
+                    <td data-label="Estado">
                         {% if esp.activa %}
                         <span class="badge badge-success">Activa</span>
                         {% else %}
                         <span class="badge badge-muted">Inactiva</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="">
                         <div class="action-btns">
                             <a href="/admin/especialidades/{{ esp.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
                             <form method="post" action="/admin/especialidades/{{ esp.id }}/toggle-activa" style="display:inline">

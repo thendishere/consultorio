@@ -31,9 +31,9 @@
             <tbody>
                 {% for m in medicos %}
                 <tr {% if not m.activo %}class="row-inactive"{% endif %}>
-                    <td><strong>{{ m.user.full_name or m.user.username }}</strong></td>
-                    <td class="text-muted">{{ m.matricula or '—' }}</td>
-                    <td>
+                    <td data-label="Nombre"><strong>{{ m.user.full_name or m.user.username }}</strong></td>
+                    <td data-label="Matrícula" class="text-muted">{{ m.matricula or '—' }}</td>
+                    <td data-label="Especialidades">
                         {% if m.especialidades %}
                             {% for esp in m.especialidades %}
                             <span class="badge badge-esp">{{ esp.nombre }}</span>
@@ -42,21 +42,21 @@
                             <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="Tipo">
                         {% if m.es_ecografo %}
                         <span class="badge badge-ecografo">Ecógrafo</span>
                         {% else %}
                         <span class="text-muted text-sm">Médico</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="Estado">
                         {% if m.activo %}
                         <span class="badge badge-success">Activo</span>
                         {% else %}
                         <span class="badge badge-muted">Inactivo</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="">
                         <div class="action-btns">
                             <a href="/admin/medicos/{{ m.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
                             <a href="/admin/medicos/{{ m.id }}/disponibilidad" class="btn btn-outline btn-xs">Horarios</a>
