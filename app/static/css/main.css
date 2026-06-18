@@ -912,7 +912,7 @@ img { max-width: 100%; display: block; }
     .filter-input, .filter-select { width: 100%; }
     .admin-form > div[style*="display:flex"] { flex-direction: column; }
     .admin-form > div[style*="display:flex"] .btn { width: 100%; justify-content: center; }
-    .form-actions { flex-direction: column; }
+    .form-actions { flex-direction: column; gap: .75rem; }
     .form-actions .btn { width: 100%; justify-content: center; }
 
     /* Auth */
