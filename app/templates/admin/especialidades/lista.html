@@ -32,7 +32,7 @@
                 <tr {% if not esp.activa %}class="row-inactive"{% endif %}>
                     <td data-label="Nombre"><strong>{{ esp.nombre }}</strong></td>
                     <td data-label="Duración">{{ esp.duracion_turno }} min</td>
-                    <td data-label="Precio">{% if esp.precio %}$ {{ "%.2f"|format(esp.precio) }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                    <td data-label="Precio">{% if esp.precio %}$ {{ esp.precio | int }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
                     <td data-label="Estado">
                         {% if esp.activa %}
                         <span class="badge badge-success">Activa</span>
