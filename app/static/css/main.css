@@ -798,6 +798,16 @@ img { max-width: 100%; display: block; }
 /* ── Responsive — Mobile (≤640px) ───────────────────────────── */
 @media (max-width: 640px) {
 
+    /* Escala de fuentes reducida para mobile */
+    :root {
+        --font-xs:   13px;
+        --font-sm:   14px;
+        --font-base: 15px;
+        --font-lg:   17px;
+        --font-xl:   20px;
+        --font-2xl:  25px;
+    }
+
     /* Navbar */
     .nav-container { padding: 0 1rem; gap: .75rem; }
     .logo-text { font-size: var(--font-base); }
