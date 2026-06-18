@@ -24,6 +24,7 @@ class Especialidad(Base):
 
     medicos = relationship("Medico", secondary=medico_especialidad, back_populates="especialidades")
     disponibilidades = relationship("Disponibilidad", back_populates="especialidad", cascade="all, delete-orphan")
+    procedimientos = relationship("TipoProcedimiento", back_populates="especialidad", cascade="all, delete-orphan")
 
 
 class Medico(Base):
@@ -56,6 +57,19 @@ class Disponibilidad(Base):
 
     medico = relationship("Medico", back_populates="disponibilidades")
     especialidad = relationship("Especialidad", back_populates="disponibilidades")
+
+
+class TipoProcedimiento(Base):
+    __tablename__ = "tipos_procedimiento"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(200), nullable=False)
+    precio = Column(Numeric(10, 2), nullable=False)
+    especialidad_id = Column(Integer, ForeignKey("especialidades.id", ondelete="CASCADE"), nullable=False)
+    activo = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    especialidad = relationship("Especialidad", back_populates="procedimientos")
 
 
 class TipoEcografia(Base):

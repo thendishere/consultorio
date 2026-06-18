@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ accion }} procedimiento — {{ esp.nombre }} — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">{{ accion }} procedimiento</h1>
+            <p class="admin-subtitle">{{ esp.nombre }}</p>
+        </div>
+        <a href="/admin/especialidades/{{ esp.id }}/procedimientos" class="btn btn-outline">← Volver</a>
+    </div>
+
+    {% if errors %}
+    <div class="alert alert-error">
+        <span class="alert-icon">⚠</span>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <div class="admin-card" style="max-width:480px">
+        <form method="post" class="admin-form">
+            {{ csrf_input(request) }}
+
+            <div class="form-group">
+                <label for="nombre">Nombre *</label>
+                <input type="text" id="nombre" name="nombre"
+                       value="{{ form.nombre if form else (proc.nombre if proc else '') }}"
+                       placeholder="Ej: PAP Y COLPO" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="precio">Precio (ARS) *</label>
+                <input type="text" id="precio" name="precio" inputmode="decimal"
+                       value="{{ form.precio if form else (proc.precio | int if proc else '') }}"
+                       placeholder="Ej: 32000" required>
+            </div>
+
+            <div style="display:flex;gap:.75rem;margin-top:.5rem">
+                <button type="submit" class="btn btn-primary btn-lg">{{ accion }}</button>
+                <a href="/admin/especialidades/{{ esp.id }}/procedimientos" class="btn btn-outline btn-lg">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

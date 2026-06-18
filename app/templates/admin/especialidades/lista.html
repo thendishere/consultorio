@@ -42,6 +42,7 @@
                     </td>
                     <td data-label="">
                         <div class="action-btns">
+                            <a href="/admin/especialidades/{{ esp.id }}/procedimientos" class="btn btn-outline btn-xs">Aranceles</a>
                             <a href="/admin/especialidades/{{ esp.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
                             <form method="post" action="/admin/especialidades/{{ esp.id }}/toggle-activa" style="display:inline">
                                 {{ csrf_input(request) }}

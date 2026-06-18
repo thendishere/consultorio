@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Procedimientos — {{ esp.nombre }} — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">{{ esp.nombre }}</h1>
+            <p class="admin-subtitle">Aranceles y procedimientos</p>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <a href="/admin/especialidades/{{ esp.id }}/procedimientos/crear" class="btn btn-primary">+ Agregar</a>
+            <a href="/admin/especialidades" class="btn btn-outline">← Especialidades</a>
+        </div>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados.</div>
+    {% endif %}
+
+    <div class="admin-card">
+        {% if procs %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in procs %}
+                <tr {% if not p.activo %}class="row-inactive"{% endif %}>
+                    <td data-label="Nombre"><strong>{{ p.nombre }}</strong></td>
+                    <td data-label="Precio"><span style="white-space:nowrap">$ {{ p.precio | int }}</span></td>
+                    <td data-label="Estado">
+                        {% if p.activo %}
+                        <span class="badge badge-success">Activo</span>
+                        {% else %}
+                        <span class="badge badge-muted">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="">
+                        <div class="action-btns">
+                            <a href="/admin/especialidades/{{ esp.id }}/procedimientos/{{ p.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
+                            <form method="post" action="/admin/especialidades/{{ esp.id }}/procedimientos/{{ p.id }}/toggle-activo" style="display:inline">
+                                {{ csrf_input(request) }}
+                                <button type="submit" class="btn btn-outline btn-xs">
+                                    {% if p.activo %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="/admin/especialidades/{{ esp.id }}/procedimientos/{{ p.id }}/eliminar" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar {{ p.nombre }}?')">
+                                {{ csrf_input(request) }}
+                                <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>No hay procedimientos cargados todavía.</p>
+            <a href="/admin/especialidades/{{ esp.id }}/procedimientos/crear" class="btn btn-primary" style="margin-top:.75rem">Agregar primero</a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
