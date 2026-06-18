@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Table, Time
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Table, Time, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..database import Base
@@ -18,6 +18,7 @@ class Especialidad(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False, unique=True)
     duracion_turno = Column(Integer, nullable=False, default=20)  # minutos
+    precio = Column(Numeric(10, 2), nullable=True)
     activa = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -55,3 +56,13 @@ class Disponibilidad(Base):
 
     medico = relationship("Medico", back_populates="disponibilidades")
     especialidad = relationship("Especialidad", back_populates="disponibilidades")
+
+
+class TipoEcografia(Base):
+    __tablename__ = "tipos_ecografia"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(150), nullable=False, unique=True)
+    precio = Column(Numeric(10, 2), nullable=False)
+    activo = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
