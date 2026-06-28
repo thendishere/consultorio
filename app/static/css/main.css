@@ -256,18 +256,20 @@ img { max-width: 100%; display: block; }
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 1.5rem 1.25rem;
+    padding: 1.25rem 1.25rem;
     display: flex;
-    flex-direction: column;
-    gap: .35rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
     transition: border-color var(--transition);
 }
 .stat-card:hover { border-color: var(--border-light); }
 .stat-card-success { border-color: rgba(46,125,82,.35); }
 .stat-card-muted   { opacity: .65; }
-.stat-card-icon  { font-size: 2rem; line-height: 1; }
+.stat-card-icon  { font-size: 2.25rem; line-height: 1; flex-shrink: 0; }
+.stat-card-body  { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
 .stat-card-value { font-size: var(--font-2xl); font-weight: 800; color: var(--text-primary); line-height: 1; }
-.stat-card-label { font-size: var(--font-sm); color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+.stat-card-label { font-size: var(--font-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
 
 /* Admin card */
 .admin-card {
