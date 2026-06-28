@@ -412,10 +412,11 @@ img { max-width: 100%; display: block; }
 /* ── Auth ───────────────────────────────────────────────────── */
 .auth-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    flex: 1;
-    padding: 2rem 1rem;
+    min-height: 100dvh;
+    padding: 3rem 1rem 2rem;
+    box-sizing: border-box;
 }
 .auth-card {
     background: var(--bg-card);
