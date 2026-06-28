@@ -86,7 +86,7 @@ img { max-width: 100%; display: block; }
 }
 .logo-icon { font-size: 1.6rem; line-height: 1; }
 .logo-text {
-    font-size: var(--font-lg);
+    font-size: 16px;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -100,9 +100,9 @@ img { max-width: 100%; display: block; }
 }
 .nav-link {
     color: var(--text-muted);
-    font-size: var(--font-base);
+    font-size: 15px;
     font-weight: 600;
-    padding: .55rem 1rem;
+    padding: .55rem .75rem;
     border-radius: var(--radius);
     transition: color var(--transition), background var(--transition);
     white-space: nowrap;
@@ -134,7 +134,7 @@ img { max-width: 100%; display: block; }
     color: var(--text-body);
     padding: .4rem 1rem;
     border-radius: 99px;
-    font-size: var(--font-sm);
+    font-size: 14px;
     font-weight: 600;
     border: 1px solid var(--border-light);
     transition: border-color var(--transition), background var(--transition);
