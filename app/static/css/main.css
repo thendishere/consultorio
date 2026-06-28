@@ -53,6 +53,7 @@ body {
     flex-direction: column;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
+    overflow-y: auto;
 }
 a { color: var(--accent); text-decoration: none; transition: color var(--transition); }
 a:hover { color: var(--accent-hover); }
@@ -412,11 +413,10 @@ img { max-width: 100%; display: block; }
 /* ── Auth ───────────────────────────────────────────────────── */
 .auth-wrapper {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    min-height: 100dvh;
-    padding: 3rem 1rem 2rem;
-    box-sizing: border-box;
+    flex: 1;
+    padding: 2rem 1rem;
 }
 .auth-card {
     background: var(--bg-card);
