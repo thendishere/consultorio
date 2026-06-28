@@ -467,6 +467,23 @@ img { max-width: 100%; display: block; }
 .form-group small { font-size: var(--font-sm); color: var(--text-dim); }
 .optional { font-weight: 400; opacity: .6; }
 
+/* Formulario de dos columnas */
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* Links */
+.link-primary { color: var(--accent); text-decoration: none; }
+.link-primary:hover { text-decoration: underline; }
+.link-wa { color: #25D366; text-decoration: none; }
+.link-wa:hover { text-decoration: underline; }
+
+/* Detalle paciente */
+.detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+.detalle-dl { display: flex; flex-direction: column; gap: 0; }
+.detalle-row { display: flex; flex-direction: column; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+.detalle-row:last-child { border-bottom: none; }
+.detalle-row dt { font-size: var(--font-sm); font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: .2rem; }
+.detalle-row dd { font-size: var(--font-base); color: var(--text-body); margin: 0; }
+
 /* WhatsApp input */
 .input-whatsapp {
     display: flex;
@@ -939,6 +956,8 @@ img { max-width: 100%; display: block; }
 
     /* Formularios */
     .disp-grid { grid-template-columns: 1fr; }
+    .form-row-2 { grid-template-columns: 1fr; }
+    .detalle-grid { grid-template-columns: 1fr; }
     .filter-bar { flex-direction: column; align-items: stretch; }
     .filter-input, .filter-select { width: 100%; }
     .admin-form > div[style*="display:flex"] { flex-direction: column; }

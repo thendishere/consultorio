@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Pacientes — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Pacientes</h1>
+            <p class="admin-subtitle">{{ pacientes|length }} resultado{% if pacientes|length != 1 %}s{% endif %}</p>
+        </div>
+        <a href="/pacientes/crear" class="btn btn-primary">+ Nuevo paciente</a>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Guardado correctamente.</div>
+    {% endif %}
+
+    <form method="get" class="filter-bar">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre, apellido o DNI…" class="filter-input" autofocus>
+        <button type="submit" class="btn btn-outline">Buscar</button>
+        {% if q %}<a href="/pacientes" class="btn btn-outline">✕ Limpiar</a>{% endif %}
+    </form>
+
+    <div class="admin-card">
+        {% if pacientes %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Apellido y nombre</th>
+                    <th>DNI</th>
+                    <th>Teléfono</th>
+                    <th>WhatsApp</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pacientes %}
+                <tr>
+                    <td data-label="Paciente">
+                        <a href="/pacientes/{{ p.id }}" class="link-primary">
+                            <strong>{{ p.apellido }}, {{ p.nombre }}</strong>
+                        </a>
+                    </td>
+                    <td data-label="DNI" class="text-muted">{{ p.dni or '—' }}</td>
+                    <td data-label="Teléfono" class="text-muted">{{ p.telefono or '—' }}</td>
+                    <td data-label="WhatsApp" class="text-muted">
+                        {% if p.whatsapp %}
+                        <a href="https://wa.me/54{{ p.whatsapp|replace(' ','')|replace('-','') }}" target="_blank" class="link-wa">📱 {{ p.whatsapp }}</a>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td data-label="">
+                        <div class="action-btns">
+                            <a href="/pacientes/{{ p.id }}" class="btn btn-outline btn-xs">Ver</a>
+                            <a href="/pacientes/{{ p.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🧑‍⚕️</div>
+            <p>{% if q %}No se encontraron pacientes para "{{ q }}".{% else %}No hay pacientes registrados todavía.{% endif %}</p>
+            {% if not q %}
+            <a href="/pacientes/crear" class="btn btn-primary" style="margin-top:.75rem">Registrar primer paciente</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

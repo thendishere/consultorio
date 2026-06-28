@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ paciente.nombre_completo }} — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">{{ paciente.apellido }}, {{ paciente.nombre }}</h1>
+            {% if paciente.dni %}<p class="admin-subtitle">DNI {{ paciente.dni }}</p>{% endif %}
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <a href="/pacientes/{{ paciente.id }}/editar" class="btn btn-outline">Editar</a>
+            <a href="/pacientes" class="btn btn-outline">← Pacientes</a>
+        </div>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Guardado correctamente.</div>
+    {% endif %}
+
+    <div class="detalle-grid">
+
+        <div class="admin-card">
+            <h2 class="admin-card-title" style="margin-bottom:1.25rem">Datos personales</h2>
+            <dl class="detalle-dl">
+                <div class="detalle-row">
+                    <dt>Apellido y nombre</dt>
+                    <dd>{{ paciente.apellido }}, {{ paciente.nombre }}</dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>DNI</dt>
+                    <dd>{{ paciente.dni or '—' }}</dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Fecha de nacimiento</dt>
+                    <dd>
+                        {% if paciente.fecha_nacimiento %}
+                            {{ paciente.fecha_nacimiento.strftime('%d/%m/%Y') }}
+                        {% else %}—{% endif %}
+                    </dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Teléfono</dt>
+                    <dd>{{ paciente.telefono or '—' }}</dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>WhatsApp</dt>
+                    <dd>
+                        {% if paciente.whatsapp %}
+                        <a href="https://wa.me/54{{ paciente.whatsapp|replace(' ','')|replace('-','') }}" target="_blank" class="link-wa">
+                            📱 {{ paciente.whatsapp }}
+                        </a>
+                        {% else %}—{% endif %}
+                    </dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Email</dt>
+                    <dd>{{ paciente.email or '—' }}</dd>
+                </div>
+                {% if paciente.notas %}
+                <div class="detalle-row">
+                    <dt>Notas</dt>
+                    <dd style="white-space:pre-wrap">{{ paciente.notas }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="admin-card">
+            <h2 class="admin-card-title" style="margin-bottom:1rem">Turnos</h2>
+            <div class="empty-state" style="padding:1.5rem 0">
+                <div class="empty-icon">📅</div>
+                <p>Los turnos se verán aquí.</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
