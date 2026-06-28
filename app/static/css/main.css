@@ -801,7 +801,31 @@ img { max-width: 100%; display: block; }
     .stats-grid-admin { grid-template-columns: repeat(2, 1fr); }
     .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
     .admin-layout { padding: 1.5rem 1.25rem 3rem; }
+}
+
+/* ── Navbar colapsa a hamburguesa en ≤1024px ─────────────────── */
+@media (max-width: 1024px) {
     .nav-role-badge { display: none; }
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: fixed;
+        top: 82px; left: 0; right: 0; bottom: 0;
+        background: var(--bg-2);
+        padding: .5rem 0 2rem;
+        border-top: 1px solid var(--border);
+        z-index: 99;
+        overflow-y: auto;
+        box-shadow: 0 16px 48px rgba(0,0,0,.8);
+    }
+    .nav-links.open { display: flex; }
+    .nav-toggle { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; font-size: 1.4rem; }
+    .nav-link { padding: 1rem 1.5rem; border-radius: 0; width: 100%; border-bottom: 1px solid var(--border); }
+    .nav-divider { display: none; }
+    .nav-user { width: 100%; border-top: 2px solid var(--border); margin-top: .5rem; }
+    .nav-username { width: 100%; border-radius: 0; justify-content: flex-start; padding: 1rem 1.5rem; }
+    .nav-user.open .nav-dropdown { position: static; width: 100%; box-shadow: none; border-radius: 0; border-top: 1px solid var(--border); display: block; }
+    .nav-dropdown a { padding: 1rem 1.5rem; }
 }
 
 /* ── Responsive — Mobile (≤640px) ───────────────────────────── */
