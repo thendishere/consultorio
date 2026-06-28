@@ -1,7 +1,46 @@
 {% extends "base.html" %}
 {% block title %}{{ accion }} paciente — Consultorio de la Amistad{% endblock %}
+{% block extra_head %}
+<style>
+/* Compacto solo en este formulario */
+.pac-form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    padding: 1rem 1.25rem 1.25rem;
+    max-width: 620px;
+}
+.pac-form-layout .admin-header {
+    padding: .75rem 0 .5rem;
+    margin-bottom: 0;
+}
+.pac-form-layout .admin-title { font-size: var(--font-xl); }
+.pac-form-layout .admin-form { gap: .55rem; }
+.pac-form-layout .form-group { gap: .2rem; }
+.pac-form-layout .form-group label { font-size: var(--font-xs); }
+.pac-form-layout .form-group input,
+.pac-form-layout .form-group textarea,
+.pac-form-layout .form-group select {
+    padding: .5rem .75rem;
+    font-size: var(--font-sm);
+}
+.pac-form-layout .form-group small { font-size: 12px; }
+.pac-form-layout textarea { resize: none; }
+.pac-form-layout .form-actions { margin-top: .4rem; gap: .6rem; }
+.pac-form-layout .btn-lg { padding: .7rem 1.4rem; font-size: var(--font-sm); }
+.pac-form-layout .admin-card {
+    padding: 1rem 1.1rem;
+}
+
+@media (max-width: 640px) {
+    .pac-form-layout { padding: .75rem .75rem 1rem; gap: .5rem; }
+    .pac-form-layout .form-row-2 { grid-template-columns: 1fr; gap: .5rem; }
+    .pac-form-layout .btn-lg { width: 100%; justify-content: center; }
+}
+</style>
+{% endblock %}
 {% block content %}
-<div class="admin-layout">
+<div class="pac-form-layout">
 
     <div class="admin-header">
         <div>
@@ -11,13 +50,13 @@
     </div>
 
     {% if errors %}
-    <div class="alert alert-error">
+    <div class="alert alert-error" style="margin:0">
         <span class="alert-icon">⚠</span>
-        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        <ul style="margin:0">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
     </div>
     {% endif %}
 
-    <div class="admin-card" style="max-width:560px">
+    <div class="admin-card">
         <form method="post" class="admin-form">
             {{ csrf_input(request) }}
 
@@ -26,25 +65,25 @@
                     <label for="apellido">Apellido *</label>
                     <input type="text" id="apellido" name="apellido"
                            value="{{ form.apellido if form else (paciente.apellido if paciente else '') }}"
-                           placeholder="Ej: García" required autofocus>
+                           placeholder="García" required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="nombre">Nombre *</label>
                     <input type="text" id="nombre" name="nombre"
                            value="{{ form.nombre if form else (paciente.nombre if paciente else '') }}"
-                           placeholder="Ej: María" required>
+                           placeholder="María" required>
                 </div>
             </div>
 
             <div class="form-row-2">
                 <div class="form-group">
-                    <label for="dni">DNI <span class="optional">(opcional)</span></label>
+                    <label for="dni">DNI <span class="optional">(opc.)</span></label>
                     <input type="text" id="dni" name="dni" inputmode="numeric"
                            value="{{ form.dni if form else (paciente.dni if paciente else '') }}"
-                           placeholder="Ej: 30123456">
+                           placeholder="30123456">
                 </div>
                 <div class="form-group">
-                    <label for="fecha_nacimiento">Fecha de nacimiento <span class="optional">(opcional)</span></label>
+                    <label for="fecha_nacimiento">Fecha de nac. <span class="optional">(opc.)</span></label>
                     <input type="date" id="fecha_nacimiento" name="fecha_nacimiento"
                            value="{{ form.fecha_nacimiento if form else (paciente.fecha_nacimiento.isoformat() if paciente and paciente.fecha_nacimiento else '') }}">
                 </div>
@@ -52,30 +91,30 @@
 
             <div class="form-row-2">
                 <div class="form-group">
-                    <label for="telefono">Teléfono <span class="optional">(opcional)</span></label>
+                    <label for="telefono">Teléfono <span class="optional">(opc.)</span></label>
                     <input type="tel" id="telefono" name="telefono"
                            value="{{ form.telefono if form else (paciente.telefono if paciente else '') }}"
-                           placeholder="Ej: 3815001234">
+                           placeholder="3815001234">
                 </div>
                 <div class="form-group">
-                    <label for="whatsapp">WhatsApp <span class="optional">(opcional)</span></label>
+                    <label for="whatsapp">WhatsApp <span class="optional">(opc.)</span></label>
                     <input type="tel" id="whatsapp" name="whatsapp"
                            value="{{ form.whatsapp if form else (paciente.whatsapp if paciente else '') }}"
-                           placeholder="Ej: 3815001234">
-                    <small>Sin el 0 ni el 15. Se usará para enviar confirmaciones.</small>
+                           placeholder="3815001234">
+                    <small>Sin 0 ni 15</small>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="email">Email <span class="optional">(opcional)</span></label>
+                <label for="email">Email <span class="optional">(opc.)</span></label>
                 <input type="email" id="email" name="email"
                        value="{{ form.email if form else (paciente.email if paciente else '') }}"
-                       placeholder="Ej: maria@gmail.com">
+                       placeholder="maria@gmail.com">
             </div>
 
             <div class="form-group">
-                <label for="notas">Notas <span class="optional">(opcional)</span></label>
-                <textarea id="notas" name="notas" rows="3"
+                <label for="notas">Notas <span class="optional">(opc.)</span></label>
+                <textarea id="notas" name="notas" rows="2"
                           placeholder="Alergias, obra social, observaciones…">{{ form.notas if form else (paciente.notas if paciente else '') }}</textarea>
             </div>
 
