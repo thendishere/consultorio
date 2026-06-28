@@ -415,9 +415,8 @@ img { max-width: 100%; display: block; }
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 80px);
+    flex: 1;
     padding: 1rem;
-    box-sizing: border-box;
 }
 .auth-card {
     background: var(--bg-card);
