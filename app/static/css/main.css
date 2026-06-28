@@ -413,9 +413,11 @@ img { max-width: 100%; display: block; }
 /* ── Auth ───────────────────────────────────────────────────── */
 .auth-wrapper {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding: 1.5rem 1rem 2rem;
+    min-height: calc(100vh - 80px);
+    padding: 1rem;
+    box-sizing: border-box;
 }
 .auth-card {
     background: var(--bg-card);
@@ -426,11 +428,13 @@ img { max-width: 100%; display: block; }
     max-width: 440px;
     box-shadow: var(--shadow-lg);
 }
-.auth-header { margin-bottom: 1rem; text-align: center; }
-.auth-header .auth-icon { font-size: 2rem; margin-bottom: .35rem; }
-.auth-header h1 { font-size: var(--font-xl); font-weight: 700; color: var(--text-primary); margin-bottom: .2rem; }
-.auth-header p  { font-size: var(--font-sm); color: var(--text-muted); }
-.auth-form { display: flex; flex-direction: column; gap: .85rem; }
+.auth-header { margin-bottom: .85rem; text-align: center; }
+.auth-header .auth-icon { font-size: 1.75rem; margin-bottom: .25rem; display: block; }
+.auth-header h1 { font-size: var(--font-lg); font-weight: 700; color: var(--text-primary); margin-bottom: .15rem; }
+.auth-header p  { font-size: var(--font-xs); color: var(--text-muted); }
+.auth-form { display: flex; flex-direction: column; gap: .75rem; }
+.auth-form .form-group label { font-size: var(--font-sm); }
+.auth-form .form-group input { padding: .65rem .9rem; font-size: var(--font-sm); }
 .auth-submit { margin-top: .5rem; }
 
 /* ── Formularios ─────────────────────────────────────────────── */
