@@ -803,11 +803,12 @@ img { max-width: 100%; display: block; }
     .admin-layout { padding: 1.5rem 1.25rem 3rem; }
 }
 
-/* ── Navbar colapsa a hamburguesa en ≤1024px ─────────────────── */
+/* ── Navbar hamburguesa en ≤1024px ───────────────────────────── */
 @media (max-width: 1024px) {
     .nav-role-badge { display: none; }
+    .nav-toggle { display: flex !important; align-items: center; justify-content: center; width: 44px; height: 44px; font-size: 1.4rem; }
     .nav-links {
-        display: none;
+        display: none !important;
         flex-direction: column;
         position: fixed;
         top: 82px; left: 0; right: 0; bottom: 0;
@@ -818,8 +819,7 @@ img { max-width: 100%; display: block; }
         overflow-y: auto;
         box-shadow: 0 16px 48px rgba(0,0,0,.8);
     }
-    .nav-links.open { display: flex; }
-    .nav-toggle { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; font-size: 1.4rem; }
+    .nav-links.open { display: flex !important; }
     .nav-link { padding: 1rem 1.5rem; border-radius: 0; width: 100%; border-bottom: 1px solid var(--border); }
     .nav-divider { display: none; }
     .nav-user { width: 100%; border-top: 2px solid var(--border); margin-top: .5rem; }
