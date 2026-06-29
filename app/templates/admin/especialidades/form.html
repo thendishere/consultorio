@@ -1,47 +1,44 @@
 {% extends "base.html" %}
 {% block title %}{{ accion }} especialidad — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">{{ accion }} especialidad</h1>
-        </div>
-        <a href="/admin/especialidades" class="btn btn-outline">← Volver</a>
+<div class="page-header">
+    <div>
+        <h1>{{ accion }} especialidad</h1>
     </div>
-
-    {% if errors %}
-    <div class="alert alert-error">
-        <span class="alert-icon">⚠</span>
-        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-
-    <div class="admin-card" style="max-width:480px">
-        <form method="post" class="admin-form">
-            {{ csrf_input(request) }}
-
-            <div class="form-group">
-                <label for="nombre">Nombre de la especialidad *</label>
-                <input type="text" id="nombre" name="nombre"
-                       value="{{ form.nombre if form else (esp.nombre if esp else '') }}"
-                       placeholder="Ej: Clínica Médica, Cardiología..." required autofocus>
-            </div>
-
-            <div class="form-group">
-                <label for="duracion_turno">Duración del turno (minutos) *</label>
-                <input type="number" id="duracion_turno" name="duracion_turno" min="5" max="120" step="5"
-                       value="{{ form.duracion_turno if form else (esp.duracion_turno if esp else 20) }}"
-                       required>
-                <small>Tiempo que dura cada turno en esta especialidad.</small>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">{{ accion }}</button>
-                <a href="/admin/especialidades" class="btn btn-outline btn-lg">Cancelar</a>
-            </div>
-        </form>
-    </div>
-
+    <a href="/admin/especialidades" class="btn btn-ghost">← Volver</a>
 </div>
+
+{% if errors %}
+<div class="flash flash-error" style="margin-bottom:16px">
+    ⚠ <ul style="margin:0;padding-left:18px">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="page-form">
+    <form method="post">
+        {{ csrf_input(request) }}
+
+        <div class="form-group">
+            <label for="nombre">Nombre de la especialidad *</label>
+            <input type="text" id="nombre" name="nombre"
+                   value="{{ form.nombre if form else (esp.nombre if esp else '') }}"
+                   placeholder="Ej: Clínica Médica, Cardiología…" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="duracion_turno">Duración del turno (minutos) *</label>
+            <input type="number" id="duracion_turno" name="duracion_turno" min="5" max="120" step="5"
+                   value="{{ form.duracion_turno if form else (esp.duracion_turno if esp else 20) }}"
+                   required>
+            <small>Tiempo que dura cada turno en esta especialidad.</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">{{ accion }}</button>
+            <a href="/admin/especialidades" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
 {% endblock %}

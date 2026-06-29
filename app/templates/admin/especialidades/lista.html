@@ -1,72 +1,93 @@
 {% extends "base.html" %}
 {% block title %}Especialidades — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">Especialidades</h1>
-            <p class="admin-subtitle">Definí las especialidades y la duración de cada turno</p>
-        </div>
-        <a href="/admin/especialidades/crear" class="btn btn-primary">+ Nueva especialidad</a>
+<div class="page-header">
+    <div>
+        <h1>Especialidades</h1>
+        <p>Definí las especialidades y la duración de cada turno</p>
     </div>
-
-    {% if saved %}
-    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados.</div>
-    {% endif %}
-
-    <div class="admin-card">
-        {% if especialidades %}
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Duración</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for esp in especialidades %}
-                <tr {% if not esp.activa %}class="row-inactive"{% endif %}>
-                    <td data-label="Nombre"><strong>{{ esp.nombre }}</strong></td>
-                    <td data-label="Duración">{{ esp.duracion_turno }} min</td>
-                    <td data-label="Estado">
-                        {% if esp.activa %}
-                        <span class="badge badge-success">Activa</span>
-                        {% else %}
-                        <span class="badge badge-muted">Inactiva</span>
-                        {% endif %}
-                    </td>
-                    <td data-label="">
-                        <div class="action-btns">
-                            <a href="/admin/especialidades/{{ esp.id }}/procedimientos" class="btn btn-outline btn-xs">Aranceles</a>
-                            <a href="/admin/especialidades/{{ esp.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
-                            <form method="post" action="/admin/especialidades/{{ esp.id }}/toggle-activa" style="display:inline">
-                                {{ csrf_input(request) }}
-                                <button type="submit" class="btn btn-outline btn-xs">
-                                    {% if esp.activa %}Desactivar{% else %}Activar{% endif %}
-                                </button>
-                            </form>
-                            <form method="post" action="/admin/especialidades/{{ esp.id }}/eliminar" style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar la especialidad {{ esp.nombre }}? Se eliminarán también sus disponibilidades.')">
-                                {{ csrf_input(request) }}
-                                <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">🩺</div>
-            <p>No hay especialidades creadas todavía.</p>
-            <a href="/admin/especialidades/crear" class="btn btn-primary" style="margin-top:.75rem">Crear primera especialidad</a>
-        </div>
-        {% endif %}
-    </div>
-
+    <a href="/admin/especialidades/crear" class="btn">+ Nueva especialidad</a>
 </div>
+
+{% if saved %}
+<div class="flash flash-success" style="margin-bottom:16px">✓ Cambios guardados.</div>
+{% endif %}
+
+<div class="filter-bar" style="margin-bottom:14px">
+    <input id="buscador" class="filter-input" type="text" placeholder="Buscar por nombre…" autocomplete="off">
+</div>
+
+<div class="card">
+    {% if especialidades %}
+    <table class="admin-table" id="tabla-esp">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Duración</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for esp in especialidades %}
+            <tr {% if not esp.activa %}style="opacity:.55"{% endif %}>
+                <td><strong>{{ esp.nombre }}</strong></td>
+                <td>{{ esp.duracion_turno }} min</td>
+                <td>
+                    {% if esp.activa %}
+                    <span class="chip chip-cob">Activa</span>
+                    {% else %}
+                    <span class="chip chip-no">Inactiva</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <a href="/admin/especialidades/{{ esp.id }}/procedimientos" class="btn btn-ghost btn-sm">Aranceles</a>
+                        <a href="/admin/especialidades/{{ esp.id }}/editar" class="btn btn-ghost btn-sm">Editar</a>
+                        <form method="post" action="/admin/especialidades/{{ esp.id }}/toggle-activa" style="display:inline">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-ghost btn-sm">
+                                {% if esp.activa %}Desactivar{% else %}Activar{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="/admin/especialidades/{{ esp.id }}/eliminar" style="display:inline"
+                              onsubmit="return confirm('¿Eliminar la especialidad {{ esp.nombre }}? Se eliminarán también sus disponibilidades.')">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p id="sin-resultados" style="display:none;padding:20px 16px;color:var(--faint);font-size:14px">
+        Sin resultados para esa búsqueda.
+    </p>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🩺</div>
+        <p>No hay especialidades creadas todavía.</p>
+        <a href="/admin/especialidades/crear" class="btn" style="margin-top:.75rem">Crear primera especialidad</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.getElementById("buscador").addEventListener("input", function () {
+    const q = this.value.trim().toLowerCase();
+    const filas = document.querySelectorAll("#tabla-esp tbody tr");
+    let visibles = 0;
+    filas.forEach(tr => {
+        const texto = tr.querySelector("td strong").textContent.toLowerCase();
+        const mostrar = !q || texto.includes(q);
+        tr.style.display = mostrar ? "" : "none";
+        if (mostrar) visibles++;
+    });
+    document.getElementById("sin-resultados").style.display = visibles === 0 ? "" : "none";
+});
+</script>
 {% endblock %}
