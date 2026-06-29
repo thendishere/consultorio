@@ -47,11 +47,10 @@ async def listar(request: Request, db: Session = Depends(get_db)):
     if q:
         like = f"%{q}%"
         query = query.filter(
-            Paciente.apellido.ilike(like) |
-            Paciente.nombre.ilike(like) |
+            Paciente.nombre_completo.ilike(like) |
             Paciente.dni.ilike(like)
         )
-    query = query.order_by(Paciente.apellido, Paciente.nombre)
+    query = query.order_by(Paciente.nombre_completo)
     total = query.count()
     total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
     page = min(page, total_pages)
@@ -74,12 +73,16 @@ async def buscar_json(request: Request, db: Session = Depends(get_db)):
     like = f"%{q}%"
     pacientes = (
         db.query(Paciente)
-        .filter(Paciente.apellido.ilike(like) | Paciente.nombre.ilike(like) | Paciente.dni.ilike(like))
-        .order_by(Paciente.apellido, Paciente.nombre)
+        .filter(Paciente.nombre_completo.ilike(like) | Paciente.dni.ilike(like))
+        .order_by(Paciente.nombre_completo)
         .limit(10)
         .all()
     )
-    return JSONResponse([{"id": p.id, "nombre": p.nombre, "apellido": p.apellido, "dni": p.dni} for p in pacientes])
+    return JSONResponse([{
+        "id": p.id,
+        "nombre_completo": p.nombre_completo,
+        "dni": p.dni,
+    } for p in pacientes])
 
 
 @router.get("/crear", response_class=HTMLResponse)
@@ -93,8 +96,7 @@ async def crear_page(request: Request, db: Session = Depends(get_db)):
 @router.post("/crear", response_class=HTMLResponse)
 async def crear(
     request: Request,
-    nombre: str = Form(""),
-    apellido: str = Form(""),
+    nombre_completo: str = Form(""),
     dni: str = Form(""),
     fecha_nacimiento: str = Form(""),
     whatsapp: str = Form(""),
@@ -104,13 +106,11 @@ async def crear(
 ):
     user = _require_staff(request, db)
     errors = []
-    if not nombre.strip():
+    if not nombre_completo.strip():
         errors.append("El nombre es obligatorio.")
-    if not apellido.strip():
-        errors.append("El apellido es obligatorio.")
 
     form_data = {
-        "nombre": nombre, "apellido": apellido, "dni": dni,
+        "nombre_completo": nombre_completo, "dni": dni,
         "fecha_nacimiento": fecha_nacimiento,
         "whatsapp": whatsapp, "email": email, "notas": notas,
     }
@@ -124,8 +124,7 @@ async def crear(
 
     try:
         paciente = Paciente(
-            nombre=nombre.strip(),
-            apellido=apellido.strip(),
+            nombre_completo=nombre_completo.strip(),
             dni=dni.strip() or None,
             fecha_nacimiento=_parse_fecha(fecha_nacimiento),
             whatsapp=whatsapp.strip() or None,
@@ -172,8 +171,7 @@ async def editar_page(pid: int, request: Request, db: Session = Depends(get_db))
 async def editar(
     pid: int,
     request: Request,
-    nombre: str = Form(""),
-    apellido: str = Form(""),
+    nombre_completo: str = Form(""),
     dni: str = Form(""),
     fecha_nacimiento: str = Form(""),
     whatsapp: str = Form(""),
@@ -187,10 +185,8 @@ async def editar(
         raise HTTPException(status_code=404)
 
     errors = []
-    if not nombre.strip():
+    if not nombre_completo.strip():
         errors.append("El nombre es obligatorio.")
-    if not apellido.strip():
-        errors.append("El apellido es obligatorio.")
     if errors:
         return templates.TemplateResponse(
             request, "pacientes/form.html",
@@ -198,8 +194,7 @@ async def editar(
             status_code=422,
         )
 
-    paciente.nombre = nombre.strip()
-    paciente.apellido = apellido.strip()
+    paciente.nombre_completo = nombre_completo.strip()
     paciente.dni = dni.strip() or None
     paciente.fecha_nacimiento = _parse_fecha(fecha_nacimiento)
     paciente.whatsapp = whatsapp.strip() or None

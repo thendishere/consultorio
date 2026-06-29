@@ -15,7 +15,7 @@
 {% endif %}
 
 <form method="get" class="filter-bar" style="margin-bottom:14px">
-    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre, apellido o DNI…" class="filter-input" autofocus>
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o DNI…" class="filter-input" autofocus>
     <button type="submit" class="btn btn-ghost">Buscar</button>
     {% if q %}<a href="/pacientes" class="btn btn-ghost">✕ Limpiar</a>{% endif %}
 </form>
@@ -25,7 +25,7 @@
     <table class="admin-table">
         <thead>
             <tr>
-                <th>Apellido y nombre</th>
+                <th>Nombre</th>
                 <th>DNI</th>
                 <th>Edad</th>
                 <th>WhatsApp</th>
@@ -37,7 +37,7 @@
             <tr>
                 <td>
                     <a href="/pacientes/{{ p.id }}" class="link-primary">
-                        <strong>{{ p.apellido }}, {{ p.nombre }}</strong>
+                        <strong>{{ p.nombre_completo }}</strong>
                     </a>
                 </td>
                 <td class="text-muted">{{ p.dni or '—' }}</td>

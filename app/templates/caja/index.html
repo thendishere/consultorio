@@ -66,7 +66,7 @@
                     {% for t in cobros %}
                     <tr>
                         <td style="font-family:var(--mono)">{{ t.hora.strftime('%H:%M') }}</td>
-                        <td>{{ t.paciente.apellido }}, {{ t.paciente.nombre }}</td>
+                        <td>{{ t.paciente.nombre_completo }}</td>
                         <td style="color:var(--muted)">{{ t.medico.user.full_name or t.medico.user.username }}</td>
                         <td>{{ t.medio_pago|capitalize if t.medio_pago else '—' }}</td>
                         <td class="num">{{ t.monto_cobrado|int|format_miles }}</td>

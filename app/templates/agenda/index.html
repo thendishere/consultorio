@@ -142,7 +142,7 @@
 <script>
 const MEDICOS = {{ medicos_json|safe }};
 const ARS = n => "$ " + (n || 0).toLocaleString("es-AR");
-const INI2 = (ap, nom) => ((ap||"?")[0] + ((nom||"")[0]||"")).toUpperCase();
+const INI2 = (nombre_completo) => (nombre_completo||"?").split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();
 
 let fechaISO = "{{ fecha.isoformat() }}";
 let selDoc = 0;
@@ -224,8 +224,8 @@ function rowHTML(t, idx) {
         <button class="ib del" title="Eliminar" onclick="delRow(${idx})">${ICONS.trash}</button>
       </div>
       <div class="l-hora">${t.hora}</div>
-      <div class="l-ap">${t.apellido}</div>
-      <div class="l-nom">${t.nombre}</div>
+      <div class="l-ap">${t.nombre_completo}</div>
+      <div class="l-nom"></div>
       <div class="l-tipos">${t.especialidad||'—'}</div>
       <div>${ST_CHIP[t.estado]||''}</div>
       <div style="display:flex;gap:3px;padding:0 4px 0 0;justify-content:flex-end">${cobBtn}<button class="ib" title="Ver" onclick="openResumen(${idx})">${ICONS.eye}</button></div>
@@ -272,7 +272,7 @@ function dropRow(toIdx) {
 
 function delRow(idx) {
     const t = getMidRows()[idx];
-    if (!confirm(`¿Eliminar turno de ${t.apellido}, ${t.nombre}?`)) return;
+    if (!confirm(`¿Eliminar turno de ${t.nombre_completo}?`)) return;
     fetch(`/agenda/turno/${t.id}`,{method:"DELETE"}).then(() => {
         const mid = String(MEDICOS[selDoc].id);
         ledgerData[mid] = (ledgerData[mid]||[]).filter(r => r.id!==t.id);
@@ -321,7 +321,7 @@ function openEdit(idx) {
     document.getElementById("tt-title").textContent = "Editar turno";
     document.getElementById("tt-sub").textContent = m ? m.nombre : "";
     document.getElementById("tt-hora").value = t.hora;
-    document.getElementById("tt-pac-search").value = `${t.apellido}, ${t.nombre}`;
+    document.getElementById("tt-pac-search").value = t.nombre_completo;
     document.getElementById("tt-pac-id").value = t.paciente_id;
     document.getElementById("tt-notas").value = t.notas || "";
     renderEspSelect(t.especialidad_id);
@@ -374,10 +374,10 @@ document.getElementById("tt-pac-search").addEventListener("input", function() {
                     data.forEach(p => {
                         const d = document.createElement("div");
                         d.className = "pac-result-item";
-                        d.textContent = `${p.apellido}, ${p.nombre}${p.dni?" — DNI "+p.dni:""}`;
+                        d.textContent = `${p.nombre_completo}${p.dni?" — DNI "+p.dni:""}`;
                         d.onclick = () => {
                             document.getElementById("tt-pac-id").value = p.id;
-                            document.getElementById("tt-pac-search").value = `${p.apellido}, ${p.nombre}`;
+                            document.getElementById("tt-pac-search").value = p.nombre_completo;
                             res.classList.remove("open");
                         };
                         res.appendChild(d);
@@ -407,8 +407,8 @@ function openCobro(idx) {
     cobroMonto = esp ? esp.precio : 0;
     cobroPreset = "normal";
     cobroMedio = "efectivo";
-    document.getElementById("cb-ini").textContent = INI2(t.apellido,t.nombre);
-    document.getElementById("cb-name").textContent = `${t.apellido}, ${t.nombre}`;
+    document.getElementById("cb-ini").textContent = INI2(t.nombre_completo);
+    document.getElementById("cb-name").textContent = t.nombre_completo;
     document.getElementById("cb-meta").textContent = `${m.nombre} · ${t.hora}`;
     document.getElementById("cb-items").innerHTML =
         `<div class="item-row"><div><div class="item-name">${t.especialidad||"Consulta"}</div><div class="item-desc">${m.nombre}</div></div><div class="item-price">${ARS(cobroMonto)}</div></div>`;
@@ -464,8 +464,8 @@ function openResumen(idx) {
     const m = MEDICOS[selDoc];
     const esp = m.especialidades.find(e => e.id===t.especialidad_id);
     const monto = t.monto_cobrado || (esp ? esp.precio : 0);
-    document.getElementById("rs-ini").textContent   = INI2(t.apellido,t.nombre);
-    document.getElementById("rs-name").textContent  = `${t.apellido}, ${t.nombre}`;
+    document.getElementById("rs-ini").textContent   = INI2(t.nombre_completo);
+    document.getElementById("rs-name").textContent  = t.nombre_completo;
     document.getElementById("rs-meta").textContent  = `${m.nombre} · ${t.hora}`;
     document.getElementById("rs-items").innerHTML   = `<div class="item-row"><div class="item-name">${t.especialidad||"Consulta"}</div><div class="item-price">${ARS(monto)}</div></div>`;
     document.getElementById("rs-total").textContent = ARS(monto);

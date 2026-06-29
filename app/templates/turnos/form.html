@@ -74,7 +74,7 @@
                 <label>Paciente *</label>
                 <div class="pac-search-wrap">
                     <input type="text" id="pacBuscar" placeholder="Buscar por apellido o DNI…"
-                           value="{% if turno %}{{ turno.paciente.apellido }}, {{ turno.paciente.nombre }}{% elif paciente_preselect %}{{ paciente_preselect.apellido }}, {{ paciente_preselect.nombre }}{% elif form %}{{ form.paciente_nombre or '' }}{% endif %}">
+                           value="{% if turno %}{{ turno.paciente.nombre_completo }}{% elif paciente_preselect %}{{ paciente_preselect.nombre_completo }}{% elif form %}{{ form.paciente_nombre or '' }}{% endif %}">
                     <div class="pac-search-results" id="pacResults"></div>
                 </div>
                 <input type="hidden" name="paciente_id" id="pacienteId"
@@ -195,10 +195,10 @@ pacBuscar.addEventListener('input', () => {
                     data.forEach(p => {
                         const div = document.createElement('div');
                         div.className = 'pac-result-item';
-                        div.textContent = `${p.apellido}, ${p.nombre}${p.dni ? ' — DNI ' + p.dni : ''}`;
+                        div.textContent = `${p.nombre_completo}${p.dni ? ' — DNI ' + p.dni : ''}`;
                         div.addEventListener('click', () => {
                             pacienteId.value = p.id;
-                            pacBuscar.value = `${p.apellido}, ${p.nombre}`;
+                            pacBuscar.value = p.nombre_completo;
                             pacResults.classList.remove('open');
                         });
                         pacResults.appendChild(div);

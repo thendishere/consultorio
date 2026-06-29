@@ -58,7 +58,7 @@
                         <span class="text-muted" style="margin-left:.4rem">{{ t.hora.strftime('%H:%M') }}</span>
                     </td>
                     <td data-label="Paciente">
-                        <a href="/pacientes/{{ t.paciente.id }}" class="link-primary">{{ t.paciente.apellido }}, {{ t.paciente.nombre }}</a>
+                        <a href="/pacientes/{{ t.paciente.id }}" class="link-primary">{{ t.paciente.nombre_completo }}</a>
                     </td>
                     <td data-label="Médico" class="text-muted">{{ t.medico.user.full_name or t.medico.user.username }}</td>
                     <td data-label="Especialidad" class="text-muted">{{ t.especialidad.nombre if t.especialidad else '—' }}</td>

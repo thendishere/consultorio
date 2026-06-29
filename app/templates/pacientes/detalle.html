@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}{{ paciente.apellido }}, {{ paciente.nombre }} — Consultorio de la Amistad{% endblock %}
+{% block title %}{{ paciente.nombre_completo }} — Consultorio de la Amistad{% endblock %}
 {% block content %}
 
 <div class="page-header">
     <div>
-        <h1>{{ paciente.apellido }}, {{ paciente.nombre }}</h1>
+        <h1>{{ paciente.nombre_completo }}</h1>
         {% if paciente.dni %}<p>DNI {{ paciente.dni }}</p>{% endif %}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -23,8 +23,8 @@
         <h2 style="font-size:16px;font-weight:700;margin-bottom:16px">Datos personales</h2>
         <dl class="detalle-dl">
             <div class="detalle-row">
-                <dt>Apellido y nombre</dt>
-                <dd>{{ paciente.apellido }}, {{ paciente.nombre }}</dd>
+                <dt>Nombre completo</dt>
+                <dd>{{ paciente.nombre_completo }}</dd>
             </div>
             <div class="detalle-row">
                 <dt>DNI</dt>

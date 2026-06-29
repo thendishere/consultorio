@@ -7,8 +7,7 @@ class Paciente(Base):
     __tablename__ = "pacientes"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(100), nullable=False)
-    apellido = Column(String(100), nullable=False)
+    nombre_completo = Column(String(200), nullable=False)
     dni = Column(String(20), nullable=True, unique=True)
     fecha_nacimiento = Column(Date, nullable=True)
     whatsapp = Column(String(30), nullable=True)
@@ -17,7 +16,3 @@ class Paciente(Base):
     activo = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    @property
-    def nombre_completo(self):
-        return f"{self.apellido}, {self.nombre}"
