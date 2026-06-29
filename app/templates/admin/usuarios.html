@@ -14,22 +14,18 @@
 <div class="flash flash-success" style="margin-bottom:16px">✓ Cambios guardados correctamente.</div>
 {% endif %}
 
-<form method="get" class="filter-bar">
-    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o email…" class="filter-input">
-    <select name="rol" style="border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-family:inherit;font-size:15px;background:var(--surface);color:var(--ink);cursor:pointer">
+<div class="filter-bar" style="margin-bottom:14px">
+    <input id="buscador" class="filter-input" type="text" placeholder="Buscar por nombre o email…" autocomplete="off">
+    <select id="filtro-rol" style="border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-family:inherit;font-size:15px;background:var(--surface);color:var(--ink);cursor:pointer">
         <option value="">Todos los roles</option>
-        <option value="medico" {% if rol == "medico" %}selected{% endif %}>Médicos</option>
-        <option value="secretario" {% if rol == "secretario" %}selected{% endif %}>Secretarios</option>
+        <option value="medico">Médicos</option>
+        <option value="secretario">Secretarios</option>
     </select>
-    <button type="submit" class="btn btn-ghost">Filtrar</button>
-    {% if q or rol %}
-    <a href="/admin/usuarios" class="btn btn-ghost">✕ Limpiar</a>
-    {% endif %}
-</form>
+</div>
 
 <div class="card">
     {% if users %}
-    <table class="admin-table">
+    <table class="admin-table" id="tabla-usuarios">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -42,8 +38,10 @@
         </thead>
         <tbody>
             {% for u in users %}
-            <tr {% if not u.is_active %}style="opacity:.55"{% endif %}>
-                <td><strong>{{ u.full_name or u.username }}</strong></td>
+            <tr data-nombre="{{ (u.full_name or u.username) | lower }}"
+                data-email="{{ u.email | lower }}"
+                data-rol="{{ u.role }}">
+                <td {% if not u.is_active %}style="opacity:.55"{% endif %}><strong>{{ u.full_name or u.username }}</strong></td>
                 <td class="text-muted">{{ u.email }}</td>
                 <td class="text-muted">{{ u.whatsapp or '—' }}</td>
                 <td>
@@ -82,13 +80,39 @@
             {% endfor %}
         </tbody>
     </table>
+    <p id="sin-resultados" style="display:none;padding:20px 16px;color:var(--faint);font-size:14px">
+        Sin resultados para esa búsqueda.
+    </p>
     {% else %}
     <div class="empty-state">
         <div class="empty-icon">👥</div>
-        <p>No hay usuarios que coincidan con la búsqueda.</p>
+        <p>No hay usuarios registrados todavía.</p>
         <a href="/admin/usuarios/crear" class="btn" style="margin-top:.75rem">Crear primer usuario</a>
     </div>
     {% endif %}
 </div>
 
+{% endblock %}
+{% block extra_scripts %}
+<script>
+function filtrar() {
+    const q = document.getElementById("buscador").value.trim().toLowerCase();
+    const rol = document.getElementById("filtro-rol").value;
+    const filas = document.querySelectorAll("#tabla-usuarios tbody tr");
+    let visibles = 0;
+    filas.forEach(tr => {
+        const nombre = tr.dataset.nombre || "";
+        const email = tr.dataset.email || "";
+        const trRol = tr.dataset.rol || "";
+        const coincideTexto = !q || nombre.includes(q) || email.includes(q);
+        const coincideRol = !rol || trRol === rol;
+        const mostrar = coincideTexto && coincideRol;
+        tr.style.display = mostrar ? "" : "none";
+        if (mostrar) visibles++;
+    });
+    document.getElementById("sin-resultados").style.display = visibles === 0 ? "" : "none";
+}
+document.getElementById("buscador").addEventListener("input", filtrar);
+document.getElementById("filtro-rol").addEventListener("change", filtrar);
+</script>
 {% endblock %}
