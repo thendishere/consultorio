@@ -27,6 +27,7 @@
                 {% for u in usuarios %}
                 <option value="{{ u.id }}">{{ u.full_name or u.username }} ({{ u.email }})</option>
                 {% endfor %}
+                <option value="__crear__">＋ Crear nuevo usuario…</option>
             </select>
             <small>Solo aparecen usuarios con rol "médico" sin perfil asignado aún.</small>
         </div>
@@ -89,6 +90,12 @@
         title: 'Especialidades',
         fieldName: 'selected_ids',
         initial: initial,
+    });
+
+    document.getElementById('user_id').addEventListener('change', function () {
+        if (this.value === '__crear__') {
+            window.location.href = '/admin/usuarios/crear';
+        }
     });
 
     document.getElementById('medicoForm').addEventListener('submit', function (e) {
