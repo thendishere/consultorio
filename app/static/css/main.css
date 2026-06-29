@@ -892,3 +892,169 @@ tr:hover td { background: var(--surface-2); }
     .kpis { grid-template-columns: 1fr 1fr; }
     .doctabs { overflow-x: auto; }
 }
+
+/* ============================================================
+   MULTI-SELECT (especialidades médico)
+   ============================================================ */
+.ms-container {
+    position: relative;
+    user-select: none;
+}
+.ms-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--r-sm);
+    padding: 8px 12px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color .15s;
+}
+.ms-container.ms-open .ms-display,
+.ms-display:hover { border-color: var(--pine); }
+.ms-tags { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
+.ms-placeholder { color: var(--faint); font-size: 15px; }
+.ms-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--pine-tint);
+    color: var(--pine);
+    border-radius: 20px;
+    padding: 3px 10px 3px 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.ms-tag-remove {
+    border: none;
+    background: none;
+    color: var(--pine);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0;
+    line-height: 1;
+    opacity: .7;
+}
+.ms-tag-remove:hover { opacity: 1; }
+.ms-arrow { color: var(--faint); font-size: 12px; flex: 0 0 auto; }
+
+.ms-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--pine);
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow);
+    z-index: 20;
+    overflow: hidden;
+}
+.ms-container.ms-open .ms-dropdown { display: block; }
+.ms-search {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--surface-2);
+    color: var(--ink);
+    outline: none;
+}
+.ms-options {
+    list-style: none;
+    max-height: 220px;
+    overflow-y: auto;
+}
+.ms-option {
+    padding: 11px 14px;
+    font-size: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    transition: background .1s;
+}
+.ms-option:last-child { border-bottom: 0; }
+.ms-option:hover { background: var(--surface-2); }
+.ms-option.ms-selected { background: var(--pine-tint); color: var(--pine); font-weight: 600; }
+.ms-option.ms-option-ecografo { font-weight: 700; }
+.ms-option.ms-hidden { display: none; }
+
+/* bottom sheet (mobile) */
+.ss-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 100;
+}
+.ss-backdrop.ss-active { display: block; }
+.ss-sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-radius: 18px 18px 0 0;
+    z-index: 101;
+    transform: translateY(100%);
+    transition: transform .25s ease;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.ss-sheet.ss-active { transform: translateY(0); }
+.ss-sheet-handle {
+    width: 40px; height: 4px;
+    background: var(--line-strong);
+    border-radius: 2px;
+    margin: 12px auto 0;
+    flex: 0 0 auto;
+}
+.ss-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    flex: 0 0 auto;
+}
+.ss-sheet-title { font-weight: 700; font-size: 16px; }
+.ss-sheet-close {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    font-size: 14px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+}
+.ss-sheet-search-wrap { padding: 10px 14px; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+.ss-sheet-search {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: var(--r-sm);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 15px;
+    background: var(--surface);
+    color: var(--ink);
+    outline: none;
+}
+.ss-sheet-search:focus { border-color: var(--pine); }
+.ss-sheet-list { list-style: none; overflow-y: auto; flex: 1; }
+.ss-sheet-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    font-size: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+}
+.ss-sheet-option:hover { background: var(--surface-2); }
+.ss-sheet-option.ss-sheet-selected { color: var(--pine); font-weight: 600; }
+.ss-sheet-check { color: var(--pine); font-weight: 700; visibility: hidden; }
+.ss-sheet-option.ss-sheet-selected .ss-sheet-check { visibility: visible; }
+.ss-sheet-option.ss-sheet-hidden { display: none; }

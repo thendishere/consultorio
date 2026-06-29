@@ -1,91 +1,87 @@
 {% extends "base.html" %}
 {% block title %}{{ accion }} médico — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">{{ accion }} médico</h1>
-        </div>
-        <a href="/admin/medicos" class="btn btn-outline">← Volver</a>
+<div class="page-header">
+    <div>
+        <h1>{{ accion }} médico</h1>
     </div>
-
-    {% if errors %}
-    <div class="alert alert-error">
-        <span class="alert-icon">⚠</span>
-        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-
-    <div class="admin-card" style="max-width:560px">
-        <form method="post" class="admin-form" id="medicoForm">
-            {{ csrf_input(request) }}
-
-            {% if accion == "Crear" %}
-            <div class="form-group">
-                <label for="user_id">Usuario *</label>
-                <select id="user_id" name="user_id" class="form-select" required>
-                    <option value="">— Seleccioná un usuario —</option>
-                    {% for u in usuarios %}
-                    <option value="{{ u.id }}">{{ u.full_name or u.username }} ({{ u.email }})</option>
-                    {% endfor %}
-                </select>
-                <small>Solo aparecen usuarios con rol "médico" sin perfil asignado aún.</small>
-            </div>
-            {% else %}
-            <div class="form-group">
-                <label>Usuario</label>
-                <input type="text" value="{{ medico.user.full_name or medico.user.username }}" disabled class="input-disabled">
-            </div>
-            {% endif %}
-
-            <div class="form-group">
-                <label for="matricula">Matrícula <span class="optional">(opcional)</span></label>
-                <input type="text" id="matricula" name="matricula"
-                       value="{{ medico.matricula if medico else '' }}"
-                       placeholder="Ej: MP 12345">
-            </div>
-
-            <div class="form-group">
-                <label>Especialidades y tipo *</label>
-                <div class="ms-container" id="espSelect">
-                    <div class="ms-display">
-                        <div class="ms-tags">
-                            <span class="ms-placeholder">Seleccioná especialidades o Ecógrafo…</span>
-                        </div>
-                        <span class="ms-arrow">▾</span>
-                    </div>
-                    <div class="ms-dropdown">
-                        <input type="text" class="ms-search" placeholder="Buscar…">
-                        <ul class="ms-options">
-                            <li class="ms-option ms-option-ecografo" data-value="ecografo" data-label="Ecógrafo">⚡ Ecógrafo</li>
-                            {% for esp in especialidades %}
-                            <li class="ms-option" data-value="{{ esp.id }}" data-label="{{ esp.nombre }}">
-                                {{ esp.nombre }} <span class="text-muted" style="font-size:.8em">({{ esp.duracion_turno }} min)</span>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    <div class="ms-hiddens"></div>
-                </div>
-                <small>Podés seleccionar una o más especialidades. Elegí "Ecógrafo" si realiza ecografías.</small>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">
-                    {% if accion == "Crear" %}Crear y configurar horarios →{% else %}Guardar cambios{% endif %}
-                </button>
-                <a href="/admin/medicos" class="btn btn-outline btn-lg">Cancelar</a>
-            </div>
-        </form>
-    </div>
-
+    <a href="/admin/medicos" class="btn btn-ghost">← Volver</a>
 </div>
+
+{% if errors %}
+<div class="flash flash-error" style="margin-bottom:16px">
+    ⚠ <ul style="margin:0;padding-left:18px">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="page-form">
+    <form method="post" id="medicoForm">
+        {{ csrf_input(request) }}
+
+        {% if accion == "Crear" %}
+        <div class="form-group">
+            <label for="user_id">Usuario *</label>
+            <select id="user_id" name="user_id" required>
+                <option value="">— Seleccioná un usuario —</option>
+                {% for u in usuarios %}
+                <option value="{{ u.id }}">{{ u.full_name or u.username }} ({{ u.email }})</option>
+                {% endfor %}
+            </select>
+            <small>Solo aparecen usuarios con rol "médico" sin perfil asignado aún.</small>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" value="{{ medico.user.full_name or medico.user.username }}" disabled style="opacity:.6;cursor:not-allowed">
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="matricula">Matrícula <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opcional)</span></label>
+            <input type="text" id="matricula" name="matricula"
+                   value="{{ medico.matricula if medico else '' }}"
+                   placeholder="Ej: MP 12345">
+        </div>
+
+        <div class="form-group">
+            <label>Especialidades y tipo *</label>
+            <div class="ms-container" id="espSelect">
+                <div class="ms-display">
+                    <div class="ms-tags">
+                        <span class="ms-placeholder">Seleccioná especialidades o Ecógrafo…</span>
+                    </div>
+                    <span class="ms-arrow">▾</span>
+                </div>
+                <div class="ms-dropdown">
+                    <input type="text" class="ms-search" placeholder="Buscar…">
+                    <ul class="ms-options">
+                        <li class="ms-option ms-option-ecografo" data-value="ecografo" data-label="Ecógrafo">⚡ Ecógrafo</li>
+                        {% for esp in especialidades %}
+                        <li class="ms-option" data-value="{{ esp.id }}" data-label="{{ esp.nombre }}">
+                            {{ esp.nombre }} <span style="font-size:.85em;color:var(--muted)">({{ esp.duracion_turno }} min)</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="ms-hiddens"></div>
+            </div>
+            <small>Podés seleccionar una o más especialidades. Elegí "Ecógrafo" si realiza ecografías.</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">
+                {% if accion == "Crear" %}Crear y configurar horarios →{% else %}Guardar cambios{% endif %}
+            </button>
+            <a href="/admin/medicos" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
 {% endblock %}
 {% block extra_scripts %}
 <script src="/static/js/multi-select.js"></script>
 <script>
-    // Valores pre-seleccionados (edición)
     var initial = [
         {% if esp_ids %}{% for eid in esp_ids %}"{{ eid }}",{% endfor %}{% endif %}
     ];
@@ -95,7 +91,6 @@
         initial: initial,
     });
 
-    // Validación antes de enviar
     document.getElementById('medicoForm').addEventListener('submit', function (e) {
         var hiddens = document.querySelectorAll('#espSelect input[type=hidden]');
         if (!hiddens.length) {
