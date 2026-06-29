@@ -1,89 +1,94 @@
 {% extends "base.html" %}
 {% block title %}Usuarios — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">Usuarios</h1>
-            <p class="admin-subtitle">Médicos y secretarios del consultorio</p>
-        </div>
-        <a href="/admin/usuarios/crear" class="btn btn-primary">+ Nuevo usuario</a>
+<div class="page-header">
+    <div>
+        <h1>Usuarios</h1>
+        <p>Médicos y secretarios del consultorio</p>
     </div>
-
-    {% if saved %}
-    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados correctamente.</div>
-    {% endif %}
-
-    <!-- Filtros -->
-    <form method="get" class="filter-bar">
-        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o email..." class="filter-input">
-        <select name="rol" class="filter-select">
-            <option value="">Todos los roles</option>
-            <option value="medico" {% if rol == "medico" %}selected{% endif %}>Médicos</option>
-            <option value="secretario" {% if rol == "secretario" %}selected{% endif %}>Secretarios</option>
-        </select>
-        <button type="submit" class="btn btn-outline">Filtrar</button>
-        {% if q or rol %}
-        <a href="/admin/usuarios" class="btn btn-outline">✕ Limpiar</a>
-        {% endif %}
-    </form>
-
-    <div class="admin-card">
-        {% if users %}
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>WhatsApp</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                <tr {% if not u.is_active %}class="row-inactive"{% endif %}>
-                    <td data-label="Nombre"><strong>{{ u.full_name or u.username }}</strong></td>
-                    <td data-label="Email" class="text-muted">{{ u.email }}</td>
-                    <td data-label="WhatsApp" class="text-muted">{{ u.whatsapp or '—' }}</td>
-                    <td data-label="Rol"><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
-                    <td data-label="Estado">
-                        {% if u.is_active %}
-                        <span class="badge badge-success">Activo</span>
-                        {% else %}
-                        <span class="badge badge-muted">Inactivo</span>
-                        {% endif %}
-                    </td>
-                    <td data-label="">
-                        <div class="action-btns">
-                            <a href="/admin/usuarios/{{ u.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
-                            <form method="post" action="/admin/usuarios/{{ u.id }}/toggle-activo" style="display:inline">
-                                {{ csrf_input(request) }}
-                                <button type="submit" class="btn btn-outline btn-xs">
-                                    {% if u.is_active %}Desactivar{% else %}Activar{% endif %}
-                                </button>
-                            </form>
-                            <form method="post" action="/admin/usuarios/{{ u.id }}/eliminar" style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar a {{ u.full_name or u.username }}? Esta acción no se puede deshacer.')">
-                                {{ csrf_input(request) }}
-                                <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">👥</div>
-            <p>No hay usuarios que coincidan con la búsqueda.</p>
-            <a href="/admin/usuarios/crear" class="btn btn-primary" style="margin-top:.75rem">Crear primer usuario</a>
-        </div>
-        {% endif %}
-    </div>
-
+    <a href="/admin/usuarios/crear" class="btn">+ Nuevo usuario</a>
 </div>
+
+{% if saved %}
+<div class="flash flash-success" style="margin-bottom:16px">✓ Cambios guardados correctamente.</div>
+{% endif %}
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o email…" class="filter-input">
+    <select name="rol" style="border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-family:inherit;font-size:15px;background:var(--surface);color:var(--ink);cursor:pointer">
+        <option value="">Todos los roles</option>
+        <option value="medico" {% if rol == "medico" %}selected{% endif %}>Médicos</option>
+        <option value="secretario" {% if rol == "secretario" %}selected{% endif %}>Secretarios</option>
+    </select>
+    <button type="submit" class="btn btn-ghost">Filtrar</button>
+    {% if q or rol %}
+    <a href="/admin/usuarios" class="btn btn-ghost">✕ Limpiar</a>
+    {% endif %}
+</form>
+
+<div class="card">
+    {% if users %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>WhatsApp</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr {% if not u.is_active %}style="opacity:.55"{% endif %}>
+                <td><strong>{{ u.full_name or u.username }}</strong></td>
+                <td class="text-muted">{{ u.email }}</td>
+                <td class="text-muted">{{ u.whatsapp or '—' }}</td>
+                <td>
+                    {% if u.role == "superadmin" %}
+                    <span class="chip chip-baj">Superadmin</span>
+                    {% elif u.role == "medico" %}
+                    <span class="chip chip-ate">Médico</span>
+                    {% else %}
+                    <span class="chip chip-age">Secretario</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if u.is_active %}
+                    <span class="chip chip-cob">Activo</span>
+                    {% else %}
+                    <span class="chip chip-no">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <a href="/admin/usuarios/{{ u.id }}/editar" class="btn btn-ghost btn-sm">Editar</a>
+                        <form method="post" action="/admin/usuarios/{{ u.id }}/toggle-activo" style="display:inline">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-ghost btn-sm">
+                                {% if u.is_active %}Desactivar{% else %}Activar{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="/admin/usuarios/{{ u.id }}/eliminar" style="display:inline"
+                              onsubmit="return confirm('¿Eliminar a {{ u.full_name or u.username }}? Esta acción no se puede deshacer.')">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>No hay usuarios que coincidan con la búsqueda.</p>
+        <a href="/admin/usuarios/crear" class="btn" style="margin-top:.75rem">Crear primer usuario</a>
+    </div>
+    {% endif %}
+</div>
+
 {% endblock %}

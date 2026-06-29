@@ -1,83 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Crear usuario — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">Crear usuario</h1>
-            <p class="admin-subtitle">Médico o secretario del consultorio</p>
-        </div>
-        <a href="/admin/usuarios" class="btn btn-outline">← Volver</a>
+<div class="page-header">
+    <div>
+        <h1>Crear usuario</h1>
+        <p>Médico o secretario del consultorio</p>
     </div>
-
-    {% if errors %}
-    <div class="alert alert-error">
-        <span class="alert-icon">⚠</span>
-        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-
-    <div class="admin-card" style="max-width:560px">
-        <form method="post" action="/admin/usuarios/crear" class="admin-form">
-            {{ csrf_input(request) }}
-
-            <div class="form-group">
-                <label for="full_name">Nombre completo *</label>
-                <input type="text" id="full_name" name="full_name"
-                       value="{{ form.full_name if form else '' }}"
-                       placeholder="Dr. Juan Pérez" required autofocus>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Correo electrónico *</label>
-                <input type="email" id="email" name="email"
-                       value="{{ form.email if form else '' }}"
-                       placeholder="juan@consultorio.com" required>
-            </div>
-
-            <div class="form-group">
-                <label for="username">Nombre de usuario *</label>
-                <input type="text" id="username" name="username"
-                       value="{{ form.username if form else '' }}"
-                       placeholder="juanperez" required>
-                <small>Solo letras, números y guiones bajos. Mínimo 3 caracteres.</small>
-            </div>
-
-            <div class="form-group">
-                <label for="whatsapp">WhatsApp <span class="optional">(opcional)</span></label>
-                <div class="input-whatsapp">
-                    <span class="whatsapp-prefix">+</span>
-                    <input type="tel" id="whatsapp" name="whatsapp"
-                           value="{{ form.whatsapp if form else '' }}"
-                           placeholder="591 70000000">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="role">Rol *</label>
-                <select id="role" name="role" class="form-select">
-                    <option value="secretario" {% if not form or form.role == 'secretario' %}selected{% endif %}>Secretario</option>
-                    <option value="medico" {% if form and form.role == 'medico' %}selected{% endif %}>Médico</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Contraseña *</label>
-                <div class="input-password">
-                    <input type="password" id="password" name="password"
-                           placeholder="Mínimo 8 caracteres">
-                    <button type="button" class="toggle-password" data-target="password" aria-label="Mostrar">👁</button>
-                </div>
-                <small>El usuario podrá cambiarla después (próximamente).</small>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">Crear usuario</button>
-                <a href="/admin/usuarios" class="btn btn-outline btn-lg">Cancelar</a>
-            </div>
-        </form>
-    </div>
-
+    <a href="/admin/usuarios" class="btn btn-ghost">← Volver</a>
 </div>
+
+{% if errors %}
+<div class="flash flash-error" style="margin-bottom:16px">
+    ⚠ <ul style="margin:0;padding-left:18px">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="page-form">
+    <form method="post" action="/admin/usuarios/crear">
+        {{ csrf_input(request) }}
+
+        <div class="form-group">
+            <label for="full_name">Nombre completo *</label>
+            <input type="text" id="full_name" name="full_name"
+                   value="{{ form.full_name if form else '' }}"
+                   placeholder="Dr. Juan Pérez" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo electrónico *</label>
+            <input type="email" id="email" name="email"
+                   value="{{ form.email if form else '' }}"
+                   placeholder="juan@consultorio.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="username">Nombre de usuario *</label>
+            <input type="text" id="username" name="username"
+                   value="{{ form.username if form else '' }}"
+                   placeholder="juanperez" required>
+            <small>Solo letras, números y guiones bajos. Mínimo 3 caracteres.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="whatsapp">WhatsApp <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opcional)</span></label>
+            <input type="tel" id="whatsapp" name="whatsapp"
+                   value="{{ form.whatsapp if form else '' }}"
+                   placeholder="+549 11 00000000">
+        </div>
+
+        <div class="form-group">
+            <label for="role">Rol *</label>
+            <select id="role" name="role">
+                <option value="secretario" {% if not form or form.role == 'secretario' %}selected{% endif %}>Secretario</option>
+                <option value="medico" {% if form and form.role == 'medico' %}selected{% endif %}>Médico</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Contraseña *</label>
+            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres">
+            <small>El usuario podrá cambiarla después.</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">Crear usuario</button>
+            <a href="/admin/usuarios" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
 {% endblock %}
