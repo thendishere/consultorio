@@ -1,154 +1,88 @@
 {% extends "base.html" %}
 {% block title %}{{ accion }} paciente — Consultorio de la Amistad{% endblock %}
-{% block extra_head %}
-<style>
-.pac-layout {
-    display: flex;
-    flex-direction: column;
-    gap: .75rem;
-    padding: .75rem 1.5rem 1.5rem;
-    box-sizing: border-box;
-}
-.pac-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-}
-.pac-header h1 { font-size: var(--font-xl); font-weight: 800; }
-.pac-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.5rem 1.5rem;
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-.pac-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem 1rem; }
-.pac-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 1rem; }
-.pac-full   { grid-column: 1 / -1; }
-.pac-fg { display: flex; flex-direction: column; gap: .2rem; }
-.pac-fg label { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; }
-.pac-fg input,
-.pac-fg textarea,
-.pac-fg select {
-    background: var(--bg-input);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: .55rem .8rem;
-    color: var(--text-primary);
-    font-size: var(--font-sm);
-    font-family: inherit;
-    width: 100%;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color .15s;
-}
-.pac-fg input:focus,
-.pac-fg textarea:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px rgba(91,164,207,.1); }
-.pac-fg textarea { resize: none; }
-.pac-fg small { font-size: 12px; color: var(--text-dim); }
-.pac-actions { display: flex; gap: .75rem; flex-shrink: 0; padding-top: .5rem; padding-bottom: 1rem; }
-.pac-actions .btn { padding: .65rem 1.5rem; font-size: var(--font-sm); }
+{% block content %}
 
-@media (max-width: 1024px) {
-    .pac-grid-3 { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 640px) {
-    .pac-layout { padding: .75rem; height: auto; overflow: visible; }
-    .pac-grid-3, .pac-grid-2 { grid-template-columns: 1fr; }
-    .pac-actions .btn { flex: 1; justify-content: center; }
-}
-</style>
+<div class="page-header">
+    <div>
+        <h1>{{ accion }} paciente</h1>
+    </div>
+    <a href="/pacientes{% if paciente %}/{{ paciente.id }}{% endif %}" class="btn btn-ghost">← Volver</a>
+</div>
+
+{% if errors %}
+<div class="flash flash-error" style="margin-bottom:16px">
+    ⚠ {% for e in errors %}{{ e }}{% if not loop.last %} · {% endif %}{% endfor %}
+</div>
+{% endif %}
+
+<div class="page-form" style="max-width:680px">
+    <form method="post" id="pacForm" autocomplete="off">
+        {{ csrf_input(request) }}
+
+        <div class="form-grid-3">
+            <div class="form-group">
+                <label for="apellido">Apellido *</label>
+                <input type="text" id="apellido" name="apellido"
+                       value="{{ form.apellido if form else (paciente.apellido if paciente else '') }}"
+                       placeholder="García" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre *</label>
+                <input type="text" id="nombre" name="nombre"
+                       value="{{ form.nombre if form else (paciente.nombre if paciente else '') }}"
+                       placeholder="María" required>
+            </div>
+            <div class="form-group">
+                <label for="dni">DNI <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opc.)</span></label>
+                <input type="text" id="dni" name="dni" inputmode="numeric"
+                       value="{{ form.dni if form else (paciente.dni if paciente else '') }}"
+                       placeholder="30123456">
+            </div>
+        </div>
+
+        <div class="form-grid-3">
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de nacimiento <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opc.)</span></label>
+                <input type="text" id="fecha_nacimiento" name="fecha_nacimiento"
+                       inputmode="numeric" placeholder="dd/mm/aaaa"
+                       value="{{ form.fecha_nacimiento if form else (paciente.fecha_nacimiento.strftime('%d/%m/%Y') if paciente and paciente.fecha_nacimiento else '') }}">
+            </div>
+            <div class="form-group">
+                <label for="whatsapp">WhatsApp <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opc.)</span></label>
+                <input type="tel" id="whatsapp" name="whatsapp"
+                       value="{{ form.whatsapp if form else (paciente.whatsapp if paciente else '') }}"
+                       placeholder="3815001234">
+                <small>Sin 0 ni 15</small>
+            </div>
+            <div class="form-group">
+                <label for="email">Email <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opc.)</span></label>
+                <input type="email" id="email" name="email"
+                       value="{{ form.email if form else (paciente.email if paciente else '') }}"
+                       placeholder="maria@gmail.com">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="notas">Notas <span style="font-weight:400;text-transform:none;font-size:11px;letter-spacing:0">(opc.)</span></label>
+            <textarea id="notas" name="notas" rows="3"
+                      placeholder="Alergias, obra social, observaciones…">{{ form.notas if form else (paciente.notas if paciente else '') }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">Guardar paciente</button>
+            <a href="/pacientes{% if paciente %}/{{ paciente.id }}{% endif %}" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
 {% endblock %}
 {% block extra_scripts %}
 <script>
-document.getElementById('fecha_nacimiento').addEventListener('input', function(e) {
+document.getElementById('fecha_nacimiento').addEventListener('input', function () {
     let v = this.value.replace(/\D/g, '').slice(0, 8);
     if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
     else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
     this.value = v;
 });
 </script>
-{% endblock %}
-{% block content %}
-<div class="pac-layout">
-
-    <div class="pac-header">
-        <h1>{{ accion }} paciente</h1>
-        <a href="/pacientes" class="btn btn-outline">← Volver</a>
-    </div>
-
-    {% if errors %}
-    <div class="alert alert-error" style="margin:0;flex-shrink:0">
-        <span class="alert-icon">⚠</span>
-        {% for e in errors %}{{ e }}{% if not loop.last %} · {% endif %}{% endfor %}
-    </div>
-    {% endif %}
-
-    <div class="pac-card">
-        <form method="post" class="pac-form" id="pacForm" autocomplete="off" style="display:flex;flex-direction:column;gap:.9rem;flex:1;min-height:0">
-            {{ csrf_input(request) }}
-
-            <div class="pac-grid-3">
-                <div class="pac-fg">
-                    <label for="apellido">Apellido *</label>
-                    <input type="text" id="apellido" name="apellido"
-                           value="{{ form.apellido if form else (paciente.apellido if paciente else '') }}"
-                           placeholder="García" required autofocus>
-                </div>
-                <div class="pac-fg">
-                    <label for="nombre">Nombre *</label>
-                    <input type="text" id="nombre" name="nombre"
-                           value="{{ form.nombre if form else (paciente.nombre if paciente else '') }}"
-                           placeholder="María" required>
-                </div>
-                <div class="pac-fg">
-                    <label for="dni">DNI <span class="optional">(opc.)</span></label>
-                    <input type="text" id="dni" name="dni" inputmode="numeric"
-                           value="{{ form.dni if form else (paciente.dni if paciente else '') }}"
-                           placeholder="30123456">
-                </div>
-            </div>
-
-            <div class="pac-grid-3">
-                <div class="pac-fg">
-                    <label for="fecha_nacimiento">Fecha de nacimiento <span class="optional">(opc.)</span></label>
-                    <input type="text" id="fecha_nacimiento" name="fecha_nacimiento"
-                           inputmode="numeric" placeholder="dd/mm/aaaa"
-                           value="{{ form.fecha_nacimiento if form else (paciente.fecha_nacimiento.strftime('%d/%m/%Y') if paciente and paciente.fecha_nacimiento else '') }}">
-                </div>
-<div class="pac-fg">
-                    <label for="whatsapp">WhatsApp <span class="optional">(opc.)</span></label>
-                    <input type="tel" id="whatsapp" name="whatsapp"
-                           value="{{ form.whatsapp if form else (paciente.whatsapp if paciente else '') }}"
-                           placeholder="3815001234">
-                    <small>Sin 0 ni 15</small>
-                </div>
-            </div>
-
-            <div class="pac-fg">
-                <label for="email">Email <span class="optional">(opc.)</span></label>
-                <input type="email" id="email" name="email"
-                       value="{{ form.email if form else (paciente.email if paciente else '') }}"
-                       placeholder="maria@gmail.com">
-            </div>
-
-            <div class="pac-fg" style="flex:1">
-                <label for="notas">Notas <span class="optional">(opc.)</span></label>
-                <textarea id="notas" name="notas" style="flex:1;height:100%"
-                          placeholder="Alergias, obra social, observaciones…">{{ form.notas if form else (paciente.notas if paciente else '') }}</textarea>
-            </div>
-
-            <div class="pac-actions">
-                <button type="submit" class="btn btn-primary">Guardar paciente</button>
-                <a href="/pacientes{% if paciente %}/{{ paciente.id }}{% endif %}" class="btn btn-outline">Cancelar</a>
-            </div>
-        </form>
-    </div>
-
-</div>
 {% endblock %}

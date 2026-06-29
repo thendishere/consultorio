@@ -1,97 +1,105 @@
 {% extends "base.html" %}
-{% block title %}{{ paciente.nombre_completo }} — Consultorio de la Amistad{% endblock %}
+{% block title %}{{ paciente.apellido }}, {{ paciente.nombre }} — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">{{ paciente.apellido }}, {{ paciente.nombre }}</h1>
-            {% if paciente.dni %}<p class="admin-subtitle">DNI {{ paciente.dni }}</p>{% endif %}
-        </div>
-        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-            <a href="/pacientes/{{ paciente.id }}/editar" class="btn btn-outline">Editar</a>
-            <a href="/pacientes" class="btn btn-outline">← Pacientes</a>
-        </div>
+<div class="page-header">
+    <div>
+        <h1>{{ paciente.apellido }}, {{ paciente.nombre }}</h1>
+        {% if paciente.dni %}<p>DNI {{ paciente.dni }}</p>{% endif %}
     </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="/pacientes/{{ paciente.id }}/editar" class="btn btn-ghost">Editar</a>
+        <a href="/pacientes" class="btn btn-ghost">← Pacientes</a>
+    </div>
+</div>
 
-    {% if saved %}
-    <div class="alert alert-success"><span class="alert-icon">✓</span> Guardado correctamente.</div>
-    {% endif %}
+{% if saved %}
+<div class="flash flash-success" style="margin-bottom:16px">✓ Guardado correctamente.</div>
+{% endif %}
 
-    <div class="detalle-grid">
+<div class="detalle-grid">
 
-        <div class="admin-card">
-            <h2 class="admin-card-title" style="margin-bottom:1.25rem">Datos personales</h2>
-            <dl class="detalle-dl">
-                <div class="detalle-row">
-                    <dt>Apellido y nombre</dt>
-                    <dd>{{ paciente.apellido }}, {{ paciente.nombre }}</dd>
-                </div>
-                <div class="detalle-row">
-                    <dt>DNI</dt>
-                    <dd>{{ paciente.dni or '—' }}</dd>
-                </div>
-                <div class="detalle-row">
-                    <dt>Fecha de nacimiento</dt>
-                    <dd>
-                        {% if paciente.fecha_nacimiento %}
-                            {{ paciente.fecha_nacimiento.strftime('%d/%m/%Y') }}
-                        {% else %}—{% endif %}
-                    </dd>
-                </div>
-<div class="detalle-row">
-                    <dt>WhatsApp</dt>
-                    <dd>
-                        {% if paciente.whatsapp %}
-                        <a href="https://wa.me/54{{ paciente.whatsapp|replace(' ','')|replace('-','') }}" target="_blank" class="link-wa">
-                            📱 {{ paciente.whatsapp }}
-                        </a>
-                        {% else %}—{% endif %}
-                    </dd>
-                </div>
-                <div class="detalle-row">
-                    <dt>Email</dt>
-                    <dd>{{ paciente.email or '—' }}</dd>
-                </div>
-                {% if paciente.notas %}
-                <div class="detalle-row">
-                    <dt>Notas</dt>
-                    <dd style="white-space:pre-wrap">{{ paciente.notas }}</dd>
-                </div>
-                {% endif %}
-            </dl>
-        </div>
-
-        <div class="admin-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-                <h2 class="admin-card-title">Turnos</h2>
-                <a href="/turnos/crear?paciente_id={{ paciente.id }}" class="btn btn-outline btn-sm">+ Nuevo</a>
+    <div class="card" style="padding:20px 22px">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:16px">Datos personales</h2>
+        <dl class="detalle-dl">
+            <div class="detalle-row">
+                <dt>Apellido y nombre</dt>
+                <dd>{{ paciente.apellido }}, {{ paciente.nombre }}</dd>
             </div>
-            {% if paciente.turnos %}
-            <table class="admin-table">
-                <thead>
-                    <tr><th>Fecha</th><th>Médico</th><th>Estado</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for t in paciente.turnos | sort(attribute='fecha', reverse=True) %}
-                    <tr>
-                        <td data-label="Fecha">{{ t.fecha.strftime('%d/%m/%Y') }} {{ t.hora.strftime('%H:%M') }}</td>
-                        <td data-label="Médico" class="text-muted">{{ t.medico.user.full_name or t.medico.user.username }}</td>
-                        <td data-label="Estado"><span class="estado-badge estado-{{ t.estado }}">{{ t.estado|capitalize }}</span></td>
-                        <td data-label=""><a href="/turnos/{{ t.id }}" class="btn btn-outline btn-xs">Ver</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-state" style="padding:1.5rem 0">
-                <div class="empty-icon">📅</div>
-                <p>Sin turnos registrados.</p>
+            <div class="detalle-row">
+                <dt>DNI</dt>
+                <dd>{{ paciente.dni or '—' }}</dd>
+            </div>
+            <div class="detalle-row">
+                <dt>Fecha de nacimiento</dt>
+                <dd>
+                    {% if paciente.fecha_nacimiento %}
+                        {{ paciente.fecha_nacimiento.strftime('%d/%m/%Y') }}
+                        {% set hoy = now().date() %}
+                        {% set edad = hoy.year - paciente.fecha_nacimiento.year - ((hoy.month, hoy.day) < (paciente.fecha_nacimiento.month, paciente.fecha_nacimiento.day)) %}
+                        <span class="text-muted">({{ edad }} años)</span>
+                    {% else %}—{% endif %}
+                </dd>
+            </div>
+            <div class="detalle-row">
+                <dt>WhatsApp</dt>
+                <dd>
+                    {% if paciente.whatsapp %}
+                    <a href="https://wa.me/54{{ paciente.whatsapp|replace(' ','')|replace('-','') }}" target="_blank" class="link-wa">
+                        📱 {{ paciente.whatsapp }}
+                    </a>
+                    {% else %}—{% endif %}
+                </dd>
+            </div>
+            <div class="detalle-row">
+                <dt>Email</dt>
+                <dd>{{ paciente.email or '—' }}</dd>
+            </div>
+            {% if paciente.notas %}
+            <div class="detalle-row">
+                <dt>Notas</dt>
+                <dd style="white-space:pre-wrap;text-align:left">{{ paciente.notas }}</dd>
             </div>
             {% endif %}
-        </div>
+        </dl>
+    </div>
 
+    <div class="card" style="padding:20px 22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <h2 style="font-size:16px;font-weight:700">Turnos</h2>
+            <a href="/turnos/crear?paciente_id={{ paciente.id }}" class="btn btn-ghost btn-sm">+ Nuevo</a>
+        </div>
+        {% if paciente.turnos %}
+        <table class="admin-table">
+            <thead>
+                <tr><th>Fecha</th><th>Médico</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for t in paciente.turnos | sort(attribute='fecha', reverse=True) %}
+                <tr>
+                    <td>{{ t.fecha.strftime('%d/%m/%Y') }} {{ t.hora.strftime('%H:%M') }}</td>
+                    <td class="text-muted">{{ t.medico.user.full_name or t.medico.user.username }}</td>
+                    <td>
+                        {% if t.estado == 'cobrado' %}<span class="chip chip-cob">Cobrado</span>
+                        {% elif t.estado == 'agendado' %}<span class="chip chip-age">Agendado</span>
+                        {% elif t.estado == 'en_atencion' %}<span class="chip chip-ate">En atención</span>
+                        {% elif t.estado == 'no_vino' %}<span class="chip chip-no">No vino</span>
+                        {% elif t.estado == 'baja' %}<span class="chip chip-baj">Baja</span>
+                        {% else %}<span class="chip chip-sob">{{ t.estado }}</span>{% endif %}
+                    </td>
+                    <td><a href="/turnos/{{ t.id }}" class="btn btn-ghost btn-sm">Ver</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state" style="padding:1.5rem 0">
+            <div class="empty-icon">📅</div>
+            <p>Sin turnos registrados.</p>
+        </div>
+        {% endif %}
     </div>
 
 </div>
+
 {% endblock %}
