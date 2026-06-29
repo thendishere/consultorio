@@ -1,75 +1,96 @@
 {% extends "base.html" %}
 {% block title %}Tipos de ecografía — Consultorio de la Amistad{% endblock %}
 {% block content %}
-<div class="admin-layout">
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">Tipos de ecografía</h1>
-            <p class="admin-subtitle">Aranceles por tipo de estudio</p>
-        </div>
-        <a href="/admin/ecografias/crear" class="btn btn-primary">+ Nuevo tipo</a>
+<div class="page-header">
+    <div>
+        <h1>Tipos de ecografía</h1>
+        <p>Aranceles por tipo de estudio</p>
     </div>
-
-    {% if saved %}
-    <div class="alert alert-success"><span class="alert-icon">✓</span> Cambios guardados.</div>
-    {% endif %}
-
-    <div class="admin-card">
-        {% if tipos %}
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Médico (70%)</th>
-                    <th>Consultorio (30%)</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in tipos %}
-                <tr {% if not t.activo %}class="row-inactive"{% endif %}>
-                    <td data-label="Nombre"><strong>{{ t.nombre }}</strong></td>
-                    <td data-label="Precio"><span style="white-space:nowrap">$ {{ t.precio | int }}</span></td>
-                    <td data-label="Médico (70%)"><span style="white-space:nowrap">$ {{ (t.precio * 7 / 10) | int }}</span></td>
-                    <td data-label="Consultorio (30%)"><span style="white-space:nowrap">$ {{ (t.precio * 3 / 10) | int }}</span></td>
-                    <td data-label="Estado">
-                        {% if t.activo %}
-                        <span class="badge badge-success">Activo</span>
-                        {% else %}
-                        <span class="badge badge-muted">Inactivo</span>
-                        {% endif %}
-                    </td>
-                    <td data-label="">
-                        <div class="action-btns">
-                            <a href="/admin/ecografias/{{ t.id }}/editar" class="btn btn-outline btn-xs">Editar</a>
-                            <form method="post" action="/admin/ecografias/{{ t.id }}/toggle-activo" style="display:inline">
-                                {{ csrf_input(request) }}
-                                <button type="submit" class="btn btn-outline btn-xs">
-                                    {% if t.activo %}Desactivar{% else %}Activar{% endif %}
-                                </button>
-                            </form>
-                            <form method="post" action="/admin/ecografias/{{ t.id }}/eliminar" style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar {{ t.nombre }}?')">
-                                {{ csrf_input(request) }}
-                                <button type="submit" class="btn btn-danger btn-xs">Eliminar</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">🔬</div>
-            <p>No hay tipos de ecografía cargados todavía.</p>
-            <a href="/admin/ecografias/crear" class="btn btn-primary" style="margin-top:.75rem">Agregar primer tipo</a>
-        </div>
-        {% endif %}
-    </div>
-
+    <a href="/admin/ecografias/crear" class="btn">+ Nuevo tipo</a>
 </div>
+
+{% if saved %}
+<div class="flash flash-success">✓ Cambios guardados.</div>
+{% endif %}
+
+<div class="filter-bar" style="margin-bottom:14px">
+    <input id="buscador" class="filter-input" type="text" placeholder="Buscar por nombre…" autocomplete="off">
+</div>
+
+<div class="card">
+    {% if tipos %}
+    <table class="admin-table" id="tabla-eco">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th class="num">Precio</th>
+                <th class="num">Médico (70%)</th>
+                <th class="num">Consultorio (30%)</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tipos %}
+            <tr {% if not t.activo %}style="opacity:.55"{% endif %}>
+                <td><strong>{{ t.nombre }}</strong></td>
+                <td class="num">$ {{ t.precio | int | format_miles }}</td>
+                <td class="num">$ {{ (t.precio * 7 / 10) | int | format_miles }}</td>
+                <td class="num">$ {{ (t.precio * 3 / 10) | int | format_miles }}</td>
+                <td>
+                    {% if t.activo %}
+                    <span class="chip chip-cob">Activo</span>
+                    {% else %}
+                    <span class="chip chip-no">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <a href="/admin/ecografias/{{ t.id }}/editar" class="btn btn-ghost btn-sm">Editar</a>
+                        <form method="post" action="/admin/ecografias/{{ t.id }}/toggle-activo" style="display:inline">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-ghost btn-sm">
+                                {% if t.activo %}Desactivar{% else %}Activar{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="/admin/ecografias/{{ t.id }}/eliminar" style="display:inline"
+                              onsubmit="return confirm('¿Eliminar {{ t.nombre }}?')">
+                            {{ csrf_input(request) }}
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p id="sin-resultados" style="display:none;padding:20px 16px;color:var(--faint);font-size:14px">
+        Sin resultados para esa búsqueda.
+    </p>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🔬</div>
+        <p>No hay tipos de ecografía cargados todavía.</p>
+        <a href="/admin/ecografias/crear" class="btn" style="margin-top:.75rem">Agregar primer tipo</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.getElementById("buscador").addEventListener("input", function () {
+    const q = this.value.trim().toLowerCase();
+    const filas = document.querySelectorAll("#tabla-eco tbody tr");
+    let visibles = 0;
+    filas.forEach(tr => {
+        const texto = tr.querySelector("td strong").textContent.toLowerCase();
+        const mostrar = !q || texto.includes(q);
+        tr.style.display = mostrar ? "" : "none";
+        if (mostrar) visibles++;
+    });
+    document.getElementById("sin-resultados").style.display = visibles === 0 ? "" : "none";
+});
+</script>
 {% endblock %}
