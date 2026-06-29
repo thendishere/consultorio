@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Reportes — Consultorio de la Amistad{% endblock %}
+
+{% block topbar %}
+<header class="topbar">
+    <div>
+        <h1>Reportes</h1>
+        <div class="topbar-sub">{{ desde.strftime('%d/%m/%Y') }} al {{ hasta.strftime('%d/%m/%Y') }} · 70% médico / 30% clínica</div>
+    </div>
+    <div class="topbar-right">
+        <form method="get" style="display:flex;gap:8px;align-items:center">
+            <input type="date" name="desde" value="{{ desde.isoformat() }}" class="filter-input" style="max-width:150px">
+            <input type="date" name="hasta" value="{{ hasta.isoformat() }}" class="filter-input" style="max-width:150px">
+            <button type="submit" class="btn btn-ghost btn-sm">Filtrar</button>
+        </form>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="grid2">
+    <div class="card">
+        <div class="card-head">
+            <h3>Liquidación por médico</h3>
+        </div>
+        <div class="card-body">
+            {% if rows %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Médico</th>
+                        <th class="num">Atend.</th>
+                        <th class="num">Facturado</th>
+                        <th class="num">A pagar (70%)</th>
+                        <th class="num">Clínica (30%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr>
+                        <td>{{ r.nombre }}</td>
+                        <td class="num">{{ r.atendidos }}</td>
+                        <td class="num">$ {{ r.facturado|format_miles }}</td>
+                        <td class="num" style="color:var(--pine)">$ {{ r.medico_70|format_miles }}</td>
+                        <td class="num">$ {{ r.clinica_30|format_miles }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="totrow">
+                        <td>Total</td>
+                        <td class="num">{{ total_pac }}</td>
+                        <td class="num">$ {{ total_fact|format_miles }}</td>
+                        <td class="num">$ {{ total_med|format_miles }}</td>
+                        <td class="num">$ {{ total_cli|format_miles }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state" style="padding:2rem 0">
+                <div class="empty-icon">📊</div>
+                <p>Sin cobros registrados en el período.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head"><h3>Resumen de la clínica</h3></div>
+        <div class="card-body" style="padding-top:14px">
+            <div class="split">
+                <div class="split-row"><span class="k">30% de los turnos</span><span class="v">$ {{ total_cli|format_miles }}</span></div>
+                <div class="split-row"><span class="k">– Gastos de caja</span><span class="v" style="color:var(--rose)">– $ {{ total_gastos|format_miles }}</span></div>
+                <div class="split-row big"><span class="k">Queda la clínica</span><span class="v" style="color:{% if queda_clinica >= 0 %}var(--pine){% else %}var(--rose){% endif %}">$ {{ queda_clinica|format_miles }}</span></div>
+            </div>
+            <p class="hint-line">Los gastos fijos (alquiler, sueldos) son un módulo posterior.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

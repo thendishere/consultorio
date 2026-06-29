@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from .database import engine
-from .routers import auth, main as main_router, admin, especialidades, medicos, ecografias, procedimientos, pacientes, turnos
+from .routers import auth, main as main_router, admin, especialidades, medicos, ecografias, procedimientos, pacientes, turnos, agenda, caja, reportes
 from .auth import NotAuthenticatedException
 from .csrf import set_csrf_cookie, validate_csrf
 import secrets, re
@@ -22,7 +22,11 @@ _CSRF_EXEMPT = {"/auth/login", "/auth/token"}
 
 class CSRFMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.method == "POST" and request.url.path not in _CSRF_EXEMPT:
+        content_type = request.headers.get("content-type", "")
+        is_form = ("application/x-www-form-urlencoded" in content_type or
+                   "multipart/form-data" in content_type)
+        # Solo validar CSRF en POST de formulario (JSON/PATCH/DELETE no son vulnerables a CSRF)
+        if request.method == "POST" and is_form and request.url.path not in _CSRF_EXEMPT:
             body = await request.body()
 
             async def receive():
@@ -30,7 +34,6 @@ class CSRFMiddleware(BaseHTTPMiddleware):
 
             request._receive = receive
 
-            content_type = request.headers.get("content-type", "")
             form_token = ""
             if "application/x-www-form-urlencoded" in content_type:
                 from urllib.parse import parse_qs
@@ -77,3 +80,6 @@ app.include_router(ecografias.router)
 app.include_router(procedimientos.router)
 app.include_router(pacientes.router)
 app.include_router(turnos.router)
+app.include_router(agenda.router)
+app.include_router(caja.router)
+app.include_router(reportes.router)

@@ -13,10 +13,8 @@ async def index(request: Request, db: Session = Depends(get_db)):
     user = get_current_user_optional(request, db)
     if not user:
         return RedirectResponse(url="/auth/login", status_code=302)
-    if user.role == "superadmin":
-        return RedirectResponse(url="/admin", status_code=302)
-    if user.role == "secretario":
-        return RedirectResponse(url="/secretario", status_code=302)
+    if user.role in ("superadmin", "secretario"):
+        return RedirectResponse(url="/agenda", status_code=302)
     return RedirectResponse(url="/medico", status_code=302)
 
 

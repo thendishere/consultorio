@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+{% block title %}Agenda — Consultorio de la Amistad{% endblock %}
+
+{% block topbar %}
+<header class="topbar">
+    <div>
+        <h1>Agenda del día</h1>
+        <div class="topbar-sub" id="pg-sub">Cargando…</div>
+    </div>
+    <div class="topbar-right">
+        <button class="iconbtn" id="btn-prev"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span class="datenav-date" id="fecha-display">{{ fecha.strftime('%d/%m') }}</span>
+        <button class="iconbtn" id="btn-next"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="btn" id="btn-add-turno">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Agregar turno
+        </button>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:-1px">
+    <div class="doctabs" id="doctabs"></div>
+</div>
+
+<div class="ledger-wrap">
+    <div class="lhead">
+        <div>Acciones</div><div>Hora</div><div>Apellido</div>
+        <div>Nombre</div><div>Especialidad</div><div>Estado</div><div></div>
+    </div>
+    <div class="ledger" id="ledger"></div>
+    <button class="ledger-addrow" id="btn-addrow">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar paciente
+    </button>
+</div>
+<p class="ledger-hint">Usá el <b>lápiz</b> para editar, el <b>tirador</b> para reordenar arrastrando, el <b>tacho</b> para eliminar.</p>
+<div class="totbar" id="totbar" style="display:none"></div>
+
+<!-- MODAL TURNO -->
+<div class="scrim" id="scrim-turno">
+  <div class="modal" style="max-width:450px">
+    <div class="modal-head">
+      <div class="modal-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div><div class="modal-title" id="tt-title">Agregar turno</div><div class="modal-sub" id="tt-sub"></div></div>
+      <button class="modal-close" onclick="closeScrim('scrim-turno')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="frow">
+        <div class="field" style="flex:0 0 110px">
+          <label class="lbl">Hora</label>
+          <input id="tt-hora" type="time" style="font-family:var(--mono)">
+        </div>
+        <div class="field" style="flex:1">
+          <label class="lbl">Paciente</label>
+          <div class="pac-search-wrap">
+            <input id="tt-pac-search" type="text" placeholder="Buscar apellido o DNI…" autocomplete="off">
+            <div class="pac-search-results" id="tt-pac-results"></div>
+          </div>
+          <input type="hidden" id="tt-pac-id">
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Especialidad</label>
+        <select id="tt-esp"></select>
+      </div>
+      <div class="field">
+        <label class="lbl">Notas <span style="text-transform:none;font-size:10px;letter-spacing:0">(opc.)</span></label>
+        <textarea id="tt-notas" placeholder="Primera consulta, trae estudios…" style="min-height:60px"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeScrim('scrim-turno')">Cancelar</button>
+      <button class="btn" id="btn-save-turno">Guardar turno</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COBRO -->
+<div class="scrim" id="scrim-cobro">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icon" id="cb-ini">NE</div>
+      <div><div class="modal-title" id="cb-name">—</div><div class="modal-sub" id="cb-meta">—</div></div>
+      <button class="modal-close" onclick="closeScrim('scrim-cobro')">×</button>
+    </div>
+    <div class="modal-body">
+      <label class="lbl">Atención</label>
+      <div class="items-list" id="cb-items"></div>
+      <label class="lbl">Cobro</label>
+      <div class="presets">
+        <button class="preset on" data-p="normal"><div class="preset-title">Normal</div><div class="preset-sub">Precio completo · 70/30</div></button>
+        <button class="preset" data-p="gratis"><div class="preset-title">Gratis</div><div class="preset-sub">No cobra nadie</div></button>
+        <button class="preset" data-p="solo70"><div class="preset-title">Solo el 70%</div><div class="preset-sub">La clínica perdona su parte</div></button>
+        <button class="preset" data-p="solo30"><div class="preset-title">Solo el 30%</div><div class="preset-sub">El médico perdona su parte</div></button>
+      </div>
+      <div class="split">
+        <div class="split-row"><span class="k">Paga el paciente</span><span class="v" id="cb-paga">—</span></div>
+        <div class="split-row"><span class="k">Para el médico</span><span class="v" id="cb-med">—</span></div>
+        <div class="split-row"><span class="k">Para la clínica</span><span class="v" id="cb-cli">—</span></div>
+      </div>
+      <label class="lbl">Medio de pago</label>
+      <div class="pay-row">
+        <button class="pay-btn on" data-m="efectivo"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Efectivo</button>
+        <button class="pay-btn" data-m="transferencia"><svg viewBox="0 0 24 24"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>Transferencia</button>
+      </div>
+      <input type="hidden" id="cb-paga-val">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeScrim('scrim-cobro')">Cancelar</button>
+      <button class="btn" id="btn-confirm-cobro">Registrar cobro</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESUMEN -->
+<div class="scrim" id="scrim-resumen">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-icon" id="rs-ini">—</div>
+      <div><div class="modal-title" id="rs-name">—</div><div class="modal-sub" id="rs-meta">—</div></div>
+      <button class="modal-close" onclick="closeScrim('scrim-resumen')">×</button>
+    </div>
+    <div class="modal-body">
+      <label class="lbl">Atención</label>
+      <div class="items-list" id="rs-items"></div>
+      <div class="split">
+        <div class="split-row big"><span class="k">Total</span><span class="v" id="rs-total">—</span></div>
+        <div class="split-row"><span class="k">Estado</span><span class="v" id="rs-estado">—</span></div>
+        <div class="split-row" id="rs-medio-row"><span class="k">Medio de pago</span><span class="v" id="rs-medio">—</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeScrim('scrim-resumen')">Cerrar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const MEDICOS = {{ medicos_json|safe }};
+const ARS = n => "$ " + (n || 0).toLocaleString("es-AR");
+const INI2 = (ap, nom) => ((ap||"?")[0] + ((nom||"")[0]||"")).toUpperCase();
+
+let fechaISO = "{{ fecha.isoformat() }}";
+let selDoc = 0;
+let ledgerData = {};
+let dragIdx = null;
+
+// ---- Fecha ----
+function parseFecha(iso) { const [y,m,d] = iso.split("-").map(Number); return new Date(y,m-1,d); }
+function fmtFecha(iso) {
+    const f = parseFecha(iso);
+    const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+    const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    return `${dias[f.getDay()]} ${f.getDate()} de ${meses[f.getMonth()]}`;
+}
+function isoOffset(iso, days) { const d = parseFecha(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+
+function updateFechaDisplay() {
+    const [y,m,d] = fechaISO.split("-");
+    document.getElementById("fecha-display").textContent = `${d}/${m}`;
+    history.replaceState(null,"","/agenda?fecha="+fechaISO);
+}
+
+document.getElementById("btn-prev").onclick = () => { fechaISO = isoOffset(fechaISO,-1); updateFechaDisplay(); loadAgenda(); };
+document.getElementById("btn-next").onclick = () => { fechaISO = isoOffset(fechaISO,+1); updateFechaDisplay(); loadAgenda(); };
+
+// ---- Cargar datos ----
+async function loadAgenda() {
+    document.getElementById("pg-sub").textContent = fmtFecha(fechaISO) + (MEDICOS.length ? ` · ${MEDICOS.length} médico${MEDICOS.length!==1?'s':''}` : '');
+    const res = await fetch("/agenda/data?fecha="+fechaISO);
+    ledgerData = await res.json();
+    renderTabs();
+    renderLedger();
+}
+
+// ---- Tabs ----
+function renderTabs() {
+    document.getElementById("doctabs").innerHTML = MEDICOS.map((m,i) =>
+        `<button class="doctab ${i===selDoc?'on':''}" onclick="selectDoc(${i})">${m.nombre}<small>${(m.especialidades[0]||{nombre:''}).nombre}</small></button>`
+    ).join("");
+}
+function selectDoc(i) { selDoc=i; renderTabs(); renderLedger(); }
+
+// ---- Ledger ----
+const ST_CSS  = { agendado:"r-age", en_atencion:"r-ate", cobrado:"r-cob", sobreturno:"r-sob", no_vino:"r-no", baja:"r-baj" };
+const ST_CHIP = {
+    agendado:    '<span class="chip chip-age">Agendado</span>',
+    en_atencion: '<span class="chip chip-ate">En atención</span>',
+    cobrado:     '<span class="chip chip-cob">✓ Cobrado</span>',
+    sobreturno:  '<span class="chip chip-sob">Sobreturno</span>',
+    no_vino:     '<span class="chip chip-no">No vino</span>',
+    baja:        '<span class="chip chip-baj">Baja</span>',
+};
+const ICONS = {
+    pen:  `<svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
+    move: `<svg viewBox="0 0 24 24"><path d="M8 9l-3 3 3 3M16 9l3 3-3 3M12 5v14M5 12h14"/></svg>`,
+    trash:`<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>`,
+    money:`<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>`,
+    eye:  `<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/><circle cx="12" cy="12" r="3"/></svg>`,
+};
+
+function getMidRows() {
+    const m = MEDICOS[selDoc];
+    if (!m) return [];
+    return (ledgerData[String(m.id)] || []).slice().sort((a,b) => (a.orden||0)-(b.orden||0) || a.hora.localeCompare(b.hora));
+}
+
+function rowHTML(t, idx) {
+    const terminal = ["cobrado","no_vino","baja"].includes(t.estado);
+    const cobBtn = !terminal ? `<button class="ib pri" title="Cobrar" onclick="openCobro(${idx})">${ICONS.money}</button>` : "";
+    return `<div class="lrow ${ST_CSS[t.estado]||''}" draggable="true"
+        ondragstart="dragIdx=${idx};this.classList.add('dragging')"
+        ondragend="this.classList.remove('dragging')"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="this.classList.remove('drag-over');dropRow(${idx})">
+      <div class="l-acts">
+        <button class="ib" title="Editar" onclick="openEdit(${idx})">${ICONS.pen}</button>
+        <button class="ib grip">${ICONS.move}</button>
+        <button class="ib del" title="Eliminar" onclick="delRow(${idx})">${ICONS.trash}</button>
+      </div>
+      <div class="l-hora">${t.hora}</div>
+      <div class="l-ap">${t.apellido}</div>
+      <div class="l-nom">${t.nombre}</div>
+      <div class="l-tipos">${t.especialidad||'—'}</div>
+      <div>${ST_CHIP[t.estado]||''}</div>
+      <div style="display:flex;gap:3px;padding:0 4px 0 0;justify-content:flex-end">${cobBtn}<button class="ib" title="Ver" onclick="openResumen(${idx})">${ICONS.eye}</button></div>
+    </div>`;
+}
+
+function renderLedger() {
+    const rows = getMidRows();
+    document.getElementById("ledger").innerHTML = rows.length
+        ? rows.map((t,i) => rowHTML(t,i)).join("")
+        : '<div style="padding:20px 14px;color:var(--faint);font-size:13px">Sin turnos para este médico en esta fecha.</div>';
+    renderTotbar(rows);
+}
+
+function renderTotbar(rows) {
+    const bar = document.getElementById("totbar");
+    if (!MEDICOS[selDoc]) { bar.style.display="none"; return; }
+    const m = MEDICOS[selDoc];
+    const valid = rows.filter(r => !["no_vino","baja"].includes(r.estado));
+    const cobrados = rows.filter(r => r.estado==="cobrado");
+    const totalCob = cobrados.reduce((s,r) => s+(r.monto_cobrado||0), 0);
+    bar.style.display = "flex";
+    bar.innerHTML = `<span class="totbar-date">${fechaISO.split("-").reverse().join("/")}</span>
+        <div class="totbar-item"><small>Médico</small><b style="font-size:13px">${m.nombre}</b></div>
+        <div class="totbar-item grow"><small>Pacientes</small><b>${valid.length}</b></div>
+        <div class="totbar-item"><small>Cobrado</small><b>${ARS(totalCob)}</b></div>
+        <div class="totbar-item green"><small>Médico (70%)</small><b>${ARS(Math.round(totalCob*0.7))}</b></div>`;
+}
+
+// ---- Drag & Drop ----
+function dropRow(toIdx) {
+    if (dragIdx===null || dragIdx===toIdx) return;
+    const rows = getMidRows();
+    const [moved] = rows.splice(dragIdx,1);
+    rows.splice(toIdx,0,moved);
+    rows.forEach((r,i) => {
+        r.orden = i;
+        fetch(`/agenda/turno/${r.id}/orden`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({orden:i})});
+    });
+    ledgerData[String(MEDICOS[selDoc].id)] = rows;
+    dragIdx = null;
+    renderLedger();
+}
+
+function delRow(idx) {
+    const t = getMidRows()[idx];
+    if (!confirm(`¿Eliminar turno de ${t.apellido}, ${t.nombre}?`)) return;
+    fetch(`/agenda/turno/${t.id}`,{method:"DELETE"}).then(() => {
+        const mid = String(MEDICOS[selDoc].id);
+        ledgerData[mid] = (ledgerData[mid]||[]).filter(r => r.id!==t.id);
+        renderLedger();
+    });
+}
+
+// ---- Modal turno ----
+let editTurnoId = null;
+let pacDebounce;
+
+function nextHora() {
+    const rows = getMidRows();
+    if (!rows.length) return "08:00";
+    const last = rows[rows.length-1].hora;
+    const [h,mn] = last.split(":").map(Number);
+    const total = h*60+mn+20;
+    return String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0");
+}
+
+function renderEspSelect(selectedId) {
+    const m = MEDICOS[selDoc];
+    if (!m) return;
+    document.getElementById("tt-esp").innerHTML =
+        '<option value="">— Sin especialidad —</option>' +
+        m.especialidades.map(e => `<option value="${e.id}" ${String(e.id)===String(selectedId)?'selected':''}>${e.nombre} · ${ARS(e.precio)}</option>`).join("");
+}
+
+function openAddTurno() {
+    editTurnoId = null;
+    const m = MEDICOS[selDoc];
+    document.getElementById("tt-title").textContent = "Agregar turno";
+    document.getElementById("tt-sub").textContent = m ? m.nombre : "";
+    document.getElementById("tt-hora").value = nextHora();
+    document.getElementById("tt-pac-search").value = "";
+    document.getElementById("tt-pac-id").value = "";
+    document.getElementById("tt-notas").value = "";
+    renderEspSelect(null);
+    openScrim("scrim-turno");
+}
+
+function openEdit(idx) {
+    const t = getMidRows()[idx];
+    editTurnoId = t.id;
+    const m = MEDICOS[selDoc];
+    document.getElementById("tt-title").textContent = "Editar turno";
+    document.getElementById("tt-sub").textContent = m ? m.nombre : "";
+    document.getElementById("tt-hora").value = t.hora;
+    document.getElementById("tt-pac-search").value = `${t.apellido}, ${t.nombre}`;
+    document.getElementById("tt-pac-id").value = t.paciente_id;
+    document.getElementById("tt-notas").value = t.notas || "";
+    renderEspSelect(t.especialidad_id);
+    openScrim("scrim-turno");
+}
+
+async function saveTurno() {
+    const pac_id = document.getElementById("tt-pac-id").value;
+    if (!pac_id) { alert("Buscá y seleccioná un paciente."); return; }
+    const m = MEDICOS[selDoc];
+    const espVal = document.getElementById("tt-esp").value;
+    const body = {
+        paciente_id: parseInt(pac_id),
+        medico_id: m.id,
+        especialidad_id: espVal ? parseInt(espVal) : null,
+        fecha: fechaISO,
+        hora: document.getElementById("tt-hora").value,
+        notas: document.getElementById("tt-notas").value,
+    };
+    const url = editTurnoId ? `/agenda/turno/${editTurnoId}` : "/agenda/turno";
+    const method = editTurnoId ? "PATCH" : "POST";
+    const res = await fetch(url, {method, headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+    if (!res.ok) { const err = await res.json().catch(()=>{}); alert("Error: "+(err?.detail||res.status)); return; }
+    const t = await res.json();
+    const mid = String(m.id);
+    if (!ledgerData[mid]) ledgerData[mid] = [];
+    if (editTurnoId) {
+        ledgerData[mid] = ledgerData[mid].map(r => r.id===t.id ? t : r);
+    } else {
+        ledgerData[mid].push(t);
+    }
+    closeScrim("scrim-turno");
+    renderLedger();
+}
+
+// búsqueda paciente
+document.getElementById("tt-pac-search").addEventListener("input", function() {
+    clearTimeout(pacDebounce);
+    const q = this.value.trim();
+    const res = document.getElementById("tt-pac-results");
+    if (q.length < 2) { res.classList.remove("open"); return; }
+    pacDebounce = setTimeout(() => {
+        fetch(`/pacientes/buscar?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                res.innerHTML = "";
+                if (!data.length) {
+                    res.innerHTML = '<div class="pac-result-item" style="color:var(--faint)">Sin resultados</div>';
+                } else {
+                    data.forEach(p => {
+                        const d = document.createElement("div");
+                        d.className = "pac-result-item";
+                        d.textContent = `${p.apellido}, ${p.nombre}${p.dni?" — DNI "+p.dni:""}`;
+                        d.onclick = () => {
+                            document.getElementById("tt-pac-id").value = p.id;
+                            document.getElementById("tt-pac-search").value = `${p.apellido}, ${p.nombre}`;
+                            res.classList.remove("open");
+                        };
+                        res.appendChild(d);
+                    });
+                }
+                res.classList.add("open");
+            });
+    }, 250);
+});
+document.addEventListener("click", e => {
+    const s = document.getElementById("tt-pac-search");
+    const r = document.getElementById("tt-pac-results");
+    if (s && r && !s.contains(e.target) && !r.contains(e.target)) r.classList.remove("open");
+});
+
+// ---- Modal cobro ----
+let cobroTurnoId = null;
+let cobroMonto = 0;
+let cobroPreset = "normal";
+let cobroMedio = "efectivo";
+
+function openCobro(idx) {
+    const t = getMidRows()[idx];
+    const m = MEDICOS[selDoc];
+    cobroTurnoId = t.id;
+    const esp = m.especialidades.find(e => e.id===t.especialidad_id);
+    cobroMonto = esp ? esp.precio : 0;
+    cobroPreset = "normal";
+    cobroMedio = "efectivo";
+    document.getElementById("cb-ini").textContent = INI2(t.apellido,t.nombre);
+    document.getElementById("cb-name").textContent = `${t.apellido}, ${t.nombre}`;
+    document.getElementById("cb-meta").textContent = `${m.nombre} · ${t.hora}`;
+    document.getElementById("cb-items").innerHTML =
+        `<div class="item-row"><div><div class="item-name">${t.especialidad||"Consulta"}</div><div class="item-desc">${m.nombre}</div></div><div class="item-price">${ARS(cobroMonto)}</div></div>`;
+    document.querySelectorAll(".preset").forEach(p => p.classList.toggle("on", p.dataset.p==="normal"));
+    document.querySelectorAll(".pay-btn").forEach(p => p.classList.toggle("on", p.dataset.m==="efectivo"));
+    calcCobro();
+    openScrim("scrim-cobro");
+}
+
+function calcCobro() {
+    const f = cobroMonto;
+    const med = Math.round(f*0.7), cli = f-med;
+    let paga, pm, pc;
+    if (cobroPreset==="normal")    { paga=f;   pm=med; pc=cli; }
+    else if (cobroPreset==="gratis") { paga=0; pm=0;   pc=0; }
+    else if (cobroPreset==="solo70") { paga=med;pm=med; pc=0; }
+    else                             { paga=cli;pm=0;   pc=cli; }
+    document.getElementById("cb-paga").textContent = ARS(paga);
+    document.getElementById("cb-med").textContent  = ARS(pm);
+    document.getElementById("cb-cli").textContent  = ARS(pc);
+    document.getElementById("cb-paga-val").value   = paga;
+}
+
+document.querySelectorAll(".preset").forEach(p => p.onclick = () => {
+    cobroPreset = p.dataset.p;
+    document.querySelectorAll(".preset").forEach(x => x.classList.remove("on"));
+    p.classList.add("on");
+    calcCobro();
+});
+document.querySelectorAll(".pay-btn").forEach(p => p.onclick = () => {
+    cobroMedio = p.dataset.m;
+    document.querySelectorAll(".pay-btn").forEach(x => x.classList.remove("on"));
+    p.classList.add("on");
+});
+
+async function confirmCobro() {
+    const monto = parseInt(document.getElementById("cb-paga-val").value)||0;
+    const res = await fetch(`/agenda/turno/${cobroTurnoId}/cobrar`,{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({medio_pago:cobroMedio, monto_cobrado:monto})
+    });
+    if (!res.ok) { alert("Error al registrar cobro."); return; }
+    const t = await res.json();
+    const mid = String(MEDICOS[selDoc].id);
+    ledgerData[mid] = (ledgerData[mid]||[]).map(r => r.id===t.id ? t : r);
+    closeScrim("scrim-cobro");
+    renderLedger();
+}
+
+// ---- Modal resumen ----
+function openResumen(idx) {
+    const t = getMidRows()[idx];
+    const m = MEDICOS[selDoc];
+    const esp = m.especialidades.find(e => e.id===t.especialidad_id);
+    const monto = t.monto_cobrado || (esp ? esp.precio : 0);
+    document.getElementById("rs-ini").textContent   = INI2(t.apellido,t.nombre);
+    document.getElementById("rs-name").textContent  = `${t.apellido}, ${t.nombre}`;
+    document.getElementById("rs-meta").textContent  = `${m.nombre} · ${t.hora}`;
+    document.getElementById("rs-items").innerHTML   = `<div class="item-row"><div class="item-name">${t.especialidad||"Consulta"}</div><div class="item-price">${ARS(monto)}</div></div>`;
+    document.getElementById("rs-total").textContent = ARS(monto);
+    const LABELS = {agendado:"Agendado",en_atencion:"En atención",cobrado:"Cobrado",sobreturno:"Sobreturno",no_vino:"No vino",baja:"Baja"};
+    document.getElementById("rs-estado").textContent = LABELS[t.estado]||t.estado;
+    const medioRow = document.getElementById("rs-medio-row");
+    if (t.medio_pago) {
+        document.getElementById("rs-medio").textContent = t.medio_pago==="efectivo"?"Efectivo":"Transferencia";
+        medioRow.style.display = "";
+    } else {
+        medioRow.style.display = "none";
+    }
+    openScrim("scrim-resumen");
+}
+
+// ---- Scrims ----
+function openScrim(id)  { document.getElementById(id).classList.add("open"); }
+function closeScrim(id) { document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll(".scrim").forEach(s => s.addEventListener("click", e => { if(e.target===s) s.classList.remove("open"); }));
+document.addEventListener("keydown", e => { if(e.key==="Escape") document.querySelectorAll(".scrim").forEach(s => s.classList.remove("open")); });
+
+document.getElementById("btn-add-turno").onclick = openAddTurno;
+document.getElementById("btn-addrow").onclick     = openAddTurno;
+document.getElementById("btn-save-turno").onclick = saveTurno;
+document.getElementById("btn-confirm-cobro").onclick = confirmCobro;
+
+updateFechaDisplay();
+loadAgenda();
+</script>
+{% endblock %}

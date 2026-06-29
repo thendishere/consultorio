@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Caja — Consultorio de la Amistad{% endblock %}
+
+{% block topbar %}
+<header class="topbar">
+    <div>
+        <h1>Caja</h1>
+        <div class="topbar-sub">{{ fecha.strftime('%A %d/%m/%Y').capitalize() }}</div>
+    </div>
+    <div class="topbar-right">
+        <form method="get" style="display:flex;gap:8px;align-items:center">
+            <input type="date" name="fecha" value="{{ fecha.isoformat() }}" class="filter-input" style="max-width:160px">
+            <button type="submit" class="btn btn-ghost btn-sm">Ir</button>
+        </form>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+{% if saved %}
+<div class="alert alert-success" style="margin-bottom:16px">✓ Guardado correctamente.</div>
+{% endif %}
+
+<div class="kpis">
+    <div class="kpi">
+        <div class="kpi-label">Efectivo cobrado</div>
+        <div class="kpi-value">$ {{ efectivo|int|format_miles }}</div>
+        <div class="kpi-detail">{{ cobros|selectattr('medio_pago','eq','efectivo')|list|length }} cobros</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Transferencias</div>
+        <div class="kpi-value">$ {{ transferencias|int|format_miles }}</div>
+        <div class="kpi-detail">{{ cobros|selectattr('medio_pago','eq','transferencia')|list|length }} cobros</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Gastos de caja</div>
+        <div class="kpi-value neg">– $ {{ total_gastos|int|format_miles }}</div>
+        <div class="kpi-detail">{{ gastos|length }} movimiento{% if gastos|length != 1 %}s{% endif %}</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Efectivo esperado en cajón</div>
+        <div class="kpi-value pos">$ {{ efectivo_esperado|int|format_miles }}</div>
+        <div class="kpi-detail">efectivo − gastos</div>
+    </div>
+</div>
+
+<div class="grid2">
+    <div class="card">
+        <div class="card-head">
+            <h3>Movimientos del día</h3>
+            <span class="hint" style="margin-left:auto">{{ fecha.strftime('%d/%m/%Y') }}</span>
+        </div>
+        <div class="card-body">
+            {% if cobros or gastos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Paciente / Descripción</th>
+                        <th>Médico</th>
+                        <th>Medio</th>
+                        <th class="num">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in cobros %}
+                    <tr>
+                        <td style="font-family:var(--mono)">{{ t.hora.strftime('%H:%M') }}</td>
+                        <td>{{ t.paciente.apellido }}, {{ t.paciente.nombre }}</td>
+                        <td style="color:var(--muted)">{{ t.medico.user.full_name or t.medico.user.username }}</td>
+                        <td>{{ t.medio_pago|capitalize if t.medio_pago else '—' }}</td>
+                        <td class="num">{{ t.monto_cobrado|int|format_miles }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for g in gastos %}
+                    <tr>
+                        <td style="font-family:var(--mono)">{{ g.created_at.strftime('%H:%M') }}</td>
+                        <td>{{ g.descripcion }}</td>
+                        <td style="color:var(--muted)">—</td>
+                        <td style="color:var(--rose)">Gasto</td>
+                        <td class="num" style="color:var(--rose)">– {{ g.monto|int|format_miles }}
+                            <form method="post" action="/caja/gasto/{{ g.id }}/eliminar" style="display:inline;margin-left:6px">
+                                {{ csrf_input(request) }}
+                                <button type="submit" style="border:0;background:none;color:var(--faint);cursor:pointer;font-size:11px" title="Eliminar">✕</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state" style="padding:2rem 0">
+                <div class="empty-icon">💳</div>
+                <p>Sin movimientos registrados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card">
+            <div class="card-head"><h3>Agregar gasto</h3></div>
+            <div class="card-body" style="padding-top:14px">
+                <form method="post" action="/caja/gasto">
+                    {{ csrf_input(request) }}
+                    <input type="hidden" name="fecha_str" value="{{ fecha.isoformat() }}">
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" name="descripcion" placeholder="Insumos, desayuno…" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Monto $</label>
+                        <input type="number" name="monto" min="0" step="100" placeholder="0" required>
+                    </div>
+                    <button type="submit" class="btn" style="width:100%;justify-content:center">Registrar gasto</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head"><h3>Resumen</h3></div>
+            <div class="card-body" style="padding-top:14px">
+                <div class="split">
+                    <div class="split-row"><span class="k">Efectivo cobrado</span><span class="v">$ {{ efectivo|int|format_miles }}</span></div>
+                    <div class="split-row"><span class="k">Transferencias</span><span class="v">$ {{ transferencias|int|format_miles }}</span></div>
+                    <div class="split-row"><span class="k">Gastos de caja</span><span class="v" style="color:var(--rose)">– $ {{ total_gastos|int|format_miles }}</span></div>
+                    <div class="split-row big"><span class="k">Efectivo en cajón</span><span class="v" style="color:var(--pine)">$ {{ efectivo_esperado|int|format_miles }}</span></div>
+                </div>
+                <p class="hint-line">Las transferencias se concilian aparte.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,59 +1,79 @@
-{% extends "base.html" %}
-{% block title %}Iniciar sesión — Consultorio de la Amistad{% endblock %}
-{% set hide_footer = true %}
-{% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-icon">🏥</div>
-            <h1>Bienvenido</h1>
-            <p>Consultorio de la Amistad</p>
-        </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión — Consultorio de la Amistad</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--paper); }
+        .login-wrap { width: 100%; max-width: 380px; padding: 24px 16px; }
+        .login-brand { text-align: center; margin-bottom: 28px; }
+        .login-mark {
+            width: 48px; height: 48px; border-radius: 14px;
+            background: var(--pine); color: #fff;
+            display: grid; place-items: center;
+            font-weight: 800; font-size: 22px;
+            margin: 0 auto 12px;
+        }
+        .login-brand h1 { font-size: 20px; font-weight: 800; letter-spacing: -.4px; }
+        .login-brand p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+        .login-card .form-group { margin-bottom: 14px; }
+        .login-card .form-group label { font-size: 11px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 6px; }
+        .login-card .form-group input {
+            width: 100%; border: 1.5px solid var(--line); border-radius: var(--r-sm);
+            padding: 10px 12px; font-family: inherit; font-size: 14px;
+            background: var(--surface); color: var(--ink);
+        }
+        .login-card .form-group input:focus { outline: none; border-color: var(--pine); }
+        .login-submit { width: 100%; justify-content: center; margin-top: 6px; padding: 11px; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-brand">
+        <div class="login-mark">A</div>
+        <h1>Consultorio de la Amistad</h1>
+        <p>Ingresá con tu cuenta</p>
+    </div>
 
+    <div class="login-card">
         {% if error %}
-        <div class="alert alert-error">
-            <span class="alert-icon">⚠</span>
-            <span>{{ error }}</span>
-        </div>
+        <div class="alert alert-error" style="margin-bottom:16px">⚠ {{ error }}</div>
         {% endif %}
 
-        <form method="post" action="/auth/login" class="auth-form">
+        <form method="post" action="/auth/login">
             {{ csrf_input(request) }}
             <input type="hidden" name="next" value="{{ next }}">
 
             <div class="form-group">
                 <label for="email">Correo electrónico</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value="{{ form.email if form else '' }}"
-                    placeholder="usuario@consultorio.com"
-                    autocomplete="email"
-                    required
-                    autofocus
-                >
+                <input type="email" id="email" name="email"
+                       value="{{ form.email if form else '' }}"
+                       placeholder="usuario@consultorio.com"
+                       autocomplete="email" required autofocus>
             </div>
 
             <div class="form-group">
                 <label for="password">Contraseña</label>
-                <div class="input-password">
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        placeholder="••••••••"
-                        autocomplete="current-password"
-                        required
-                    >
-                    <button type="button" class="toggle-password" data-target="password" aria-label="Mostrar contraseña">👁</button>
-                </div>
+                <input type="password" id="password" name="password"
+                       placeholder="••••••••" autocomplete="current-password" required>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full btn-lg auth-submit">
-                Iniciar sesión
-            </button>
+            <button type="submit" class="btn login-submit">Iniciar sesión</button>
         </form>
     </div>
 </div>
-{% endblock %}
+<script src="/static/js/main.js"></script>
+</body>
+</html>
