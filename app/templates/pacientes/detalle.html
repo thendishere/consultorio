@@ -39,11 +39,7 @@
                         {% else %}—{% endif %}
                     </dd>
                 </div>
-                <div class="detalle-row">
-                    <dt>Teléfono</dt>
-                    <dd>{{ paciente.telefono or '—' }}</dd>
-                </div>
-                <div class="detalle-row">
+<div class="detalle-row">
                     <dt>WhatsApp</dt>
                     <dd>
                         {% if paciente.whatsapp %}
@@ -67,11 +63,32 @@
         </div>
 
         <div class="admin-card">
-            <h2 class="admin-card-title" style="margin-bottom:1rem">Turnos</h2>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+                <h2 class="admin-card-title">Turnos</h2>
+                <a href="/turnos/crear?paciente_id={{ paciente.id }}" class="btn btn-outline btn-sm">+ Nuevo</a>
+            </div>
+            {% if paciente.turnos %}
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Fecha</th><th>Médico</th><th>Estado</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for t in paciente.turnos | sort(attribute='fecha', reverse=True) %}
+                    <tr>
+                        <td data-label="Fecha">{{ t.fecha.strftime('%d/%m/%Y') }} {{ t.hora.strftime('%H:%M') }}</td>
+                        <td data-label="Médico" class="text-muted">{{ t.medico.user.full_name or t.medico.user.username }}</td>
+                        <td data-label="Estado"><span class="estado-badge estado-{{ t.estado }}">{{ t.estado|capitalize }}</span></td>
+                        <td data-label=""><a href="/turnos/{{ t.id }}" class="btn btn-outline btn-xs">Ver</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
             <div class="empty-state" style="padding:1.5rem 0">
                 <div class="empty-icon">📅</div>
-                <p>Los turnos se verán aquí.</p>
+                <p>Sin turnos registrados.</p>
             </div>
+            {% endif %}
         </div>
 
     </div>

@@ -11,7 +11,6 @@ class Paciente(Base):
     apellido = Column(String(100), nullable=False)
     dni = Column(String(20), nullable=True, unique=True)
     fecha_nacimiento = Column(Date, nullable=True)
-    telefono = Column(String(30), nullable=True)
     whatsapp = Column(String(30), nullable=True)
     email = Column(String(150), nullable=True)
     notas = Column(Text, nullable=True)

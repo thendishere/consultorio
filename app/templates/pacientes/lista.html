@@ -6,7 +6,7 @@
     <div class="admin-header">
         <div>
             <h1 class="admin-title">Pacientes</h1>
-            <p class="admin-subtitle">{{ pacientes|length }} resultado{% if pacientes|length != 1 %}s{% endif %}</p>
+            <p class="admin-subtitle">{{ total }} paciente{% if total != 1 %}s{% endif %}{% if total_pages > 1 %} · página {{ page }} de {{ total_pages }}{% endif %}</p>
         </div>
         <a href="/pacientes/crear" class="btn btn-primary">+ Nuevo paciente</a>
     </div>
@@ -28,7 +28,7 @@
                 <tr>
                     <th>Apellido y nombre</th>
                     <th>DNI</th>
-                    <th>Teléfono</th>
+                    <th>Edad</th>
                     <th>WhatsApp</th>
                     <th></th>
                 </tr>
@@ -42,7 +42,13 @@
                         </a>
                     </td>
                     <td data-label="DNI" class="text-muted">{{ p.dni or '—' }}</td>
-                    <td data-label="Teléfono" class="text-muted">{{ p.telefono or '—' }}</td>
+                    <td data-label="Edad" class="text-muted">
+                        {% if p.fecha_nacimiento %}
+                            {% set hoy = now().date() %}
+                            {% set edad = hoy.year - p.fecha_nacimiento.year - ((hoy.month, hoy.day) < (p.fecha_nacimiento.month, p.fecha_nacimiento.day)) %}
+                            {{ edad }} años
+                        {% else %}—{% endif %}
+                    </td>
                     <td data-label="WhatsApp" class="text-muted">
                         {% if p.whatsapp %}
                         <a href="https://wa.me/54{{ p.whatsapp|replace(' ','')|replace('-','') }}" target="_blank" class="link-wa">📱 {{ p.whatsapp }}</a>
@@ -68,6 +74,26 @@
         </div>
         {% endif %}
     </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="/pacientes?page={{ page - 1 }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-outline btn-sm">← Anterior</a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="pagination-current">{{ p }}</span>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="/pacientes?page={{ p }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-outline btn-sm">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+            <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="/pacientes?page={{ page + 1 }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-outline btn-sm">Siguiente →</a>
+        {% endif %}
+    </div>
+    {% endif %}
 
 </div>
 {% endblock %}

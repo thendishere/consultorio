@@ -1,5 +1,6 @@
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
+from datetime import datetime
 import hmac
 import hashlib
 
@@ -15,3 +16,4 @@ def _csrf_input(request) -> Markup:
 
 templates.env.globals["csrf_input"] = _csrf_input
 templates.env.globals["enumerate"] = enumerate
+templates.env.globals["now"] = datetime.now

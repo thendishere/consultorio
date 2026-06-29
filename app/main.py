@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from .database import engine
-from .routers import auth, main as main_router, admin, especialidades, medicos, ecografias, procedimientos, pacientes
+from .routers import auth, main as main_router, admin, especialidades, medicos, ecografias, procedimientos, pacientes, turnos
 from .auth import NotAuthenticatedException
 from .csrf import set_csrf_cookie, validate_csrf
 import secrets, re
@@ -76,3 +76,4 @@ app.include_router(medicos.router)
 app.include_router(ecografias.router)
 app.include_router(procedimientos.router)
 app.include_router(pacientes.router)
+app.include_router(turnos.router)

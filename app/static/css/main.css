@@ -349,6 +349,20 @@ img { max-width: 100%; display: block; }
 /* Action buttons */
 .action-btns { display: flex; gap: .4rem; flex-wrap: wrap; }
 
+.estado-badge {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+.estado-pendiente   { background: rgba(251,191,36,.15);  color: #fbbf24; }
+.estado-confirmado  { background: rgba(52,211,153,.15);  color: #34d399; }
+.estado-completado  { background: rgba(99,102,241,.15);  color: #818cf8; }
+.estado-cancelado   { background: rgba(248,113,113,.15); color: #f87171; }
+
 /* Empty state */
 .empty-state {
     text-align: center;
@@ -363,6 +377,32 @@ img { max-width: 100%; display: block; }
     gap: .75rem;
     flex-wrap: wrap;
     align-items: center;
+}
+.pagination {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: .5rem 0 .25rem;
+}
+.pagination-current {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 .6rem;
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius);
+    font-size: var(--font-sm);
+    font-weight: 700;
+}
+.pagination-ellipsis {
+    color: var(--text-muted);
+    padding: 0 .25rem;
+    font-size: var(--font-sm);
 }
 .filter-input {
     flex: 1;

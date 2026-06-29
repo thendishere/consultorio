@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Turno #{{ turno.id }} — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Turno #{{ turno.id }}</h1>
+            <p class="admin-subtitle">
+                {{ turno.fecha.strftime('%d/%m/%Y') }} a las {{ turno.hora.strftime('%H:%M') }}
+                · <span class="estado-badge estado-{{ turno.estado }}">{{ turno.estado|capitalize }}</span>
+            </p>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <a href="/turnos/{{ turno.id }}/editar" class="btn btn-outline">Editar</a>
+            <a href="/turnos" class="btn btn-outline">← Turnos</a>
+        </div>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Guardado correctamente.</div>
+    {% endif %}
+
+    <div class="detalle-grid">
+
+        <div class="admin-card">
+            <h2 class="admin-card-title" style="margin-bottom:1.25rem">Datos del turno</h2>
+            <dl class="detalle-dl">
+                <div class="detalle-row">
+                    <dt>Paciente</dt>
+                    <dd><a href="/pacientes/{{ turno.paciente.id }}" class="link-primary">{{ turno.paciente.apellido }}, {{ turno.paciente.nombre }}</a></dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Médico</dt>
+                    <dd>{{ turno.medico.user.full_name or turno.medico.user.username }}</dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Especialidad</dt>
+                    <dd>{{ turno.especialidad.nombre if turno.especialidad else '—' }}</dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Fecha</dt>
+                    <dd>{{ turno.fecha.strftime('%d/%m/%Y') }}</dd>
+                </div>
+                <div class="detalle-row">
+                    <dt>Hora</dt>
+                    <dd>{{ turno.hora.strftime('%H:%M') }}</dd>
+                </div>
+                {% if turno.notas %}
+                <div class="detalle-row">
+                    <dt>Notas</dt>
+                    <dd style="white-space:pre-wrap">{{ turno.notas }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="admin-card">
+            <h2 class="admin-card-title" style="margin-bottom:1.25rem">Estado</h2>
+            <p style="margin-bottom:1rem;font-size:var(--font-sm);color:var(--text-muted)">Estado actual: <span class="estado-badge estado-{{ turno.estado }}">{{ turno.estado|capitalize }}</span></p>
+            <form method="post" action="/turnos/{{ turno.id }}/estado" style="display:flex;gap:.75rem;flex-wrap:wrap">
+                {{ csrf_input(request) }}
+                {% for e in estados %}
+                {% if e != turno.estado %}
+                <button type="submit" name="estado" value="{{ e }}" class="btn btn-outline btn-sm">
+                    → {{ e|capitalize }}
+                </button>
+                {% endif %}
+                {% endfor %}
+            </form>
+
+            {% if turno.paciente.whatsapp %}
+            <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+                <p style="font-size:var(--font-sm);color:var(--text-muted);margin-bottom:.75rem">Enviar confirmación por WhatsApp</p>
+                <a href="https://wa.me/54{{ turno.paciente.whatsapp|replace(' ','')|replace('-','') }}?text={{ ('Hola ' + turno.paciente.nombre + ', te confirmamos tu turno para el ' + turno.fecha.strftime('%d/%m/%Y') + ' a las ' + turno.hora.strftime('%H:%M') + ' con ' + (turno.medico.user.full_name or turno.medico.user.username) + '. Consultorio de la Amistad.')|urlencode }}"
+                   target="_blank" class="btn btn-outline" style="gap:.5rem">
+                    📱 Enviar por WhatsApp
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

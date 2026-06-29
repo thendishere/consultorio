@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}{{ accion }} turno — Consultorio de la Amistad{% endblock %}
+{% block extra_head %}
+<style>
+.tur-layout { display: flex; flex-direction: column; gap: .75rem; padding: .75rem 1.5rem 1.5rem; box-sizing: border-box; }
+.tur-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.tur-header h1 { font-size: var(--font-xl); font-weight: 800; }
+.tur-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem 1.5rem;
+    display: flex; flex-direction: column; gap: .9rem;
+}
+.tur-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 1rem; }
+.tur-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem 1rem; }
+.tur-fg { display: flex; flex-direction: column; gap: .2rem; }
+.tur-fg label { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; }
+.tur-fg input, .tur-fg select, .tur-fg textarea {
+    background: var(--bg-input); border: 1px solid var(--border-light);
+    border-radius: var(--radius); padding: .55rem .8rem;
+    color: var(--text-primary); font-size: var(--font-sm);
+    font-family: inherit; width: 100%; box-sizing: border-box;
+    outline: none; transition: border-color .15s;
+}
+.tur-fg input:focus, .tur-fg select:focus, .tur-fg textarea:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px rgba(91,164,207,.1); }
+.tur-fg textarea { resize: vertical; min-height: 80px; }
+.tur-actions { display: flex; gap: .75rem; padding-top: .25rem; }
+.tur-actions .btn { padding: .65rem 1.5rem; font-size: var(--font-sm); }
+.pac-search-wrap { position: relative; }
+.pac-search-results {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+    background: var(--bg-card); border: 1px solid var(--border-light);
+    border-radius: var(--radius); margin-top: 2px;
+    max-height: 200px; overflow-y: auto; display: none;
+}
+.pac-search-results.open { display: block; }
+.pac-result-item {
+    padding: .55rem .8rem; cursor: pointer; font-size: var(--font-sm);
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    transition: background .1s;
+}
+.pac-result-item:hover { background: rgba(255,255,255,.06); }
+.pac-result-item:last-child { border-bottom: none; }
+@media (max-width: 1024px) { .tur-grid-3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) {
+    .tur-layout { padding: .75rem; }
+    .tur-grid-2, .tur-grid-3 { grid-template-columns: 1fr; }
+    .tur-actions .btn { flex: 1; justify-content: center; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="tur-layout">
+
+    <div class="tur-header">
+        <h1>{{ accion }} turno</h1>
+        <a href="/turnos" class="btn btn-outline">← Volver</a>
+    </div>
+
+    {% if errors %}
+    <div class="alert alert-error" style="margin:0;flex-shrink:0">
+        <span class="alert-icon">⚠</span>
+        {% for e in errors %}{{ e }}{% if not loop.last %} · {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="tur-card">
+        <form method="post" autocomplete="off">
+            {{ csrf_input(request) }}
+
+            {# Paciente #}
+            <div class="tur-fg">
+                <label>Paciente *</label>
+                <div class="pac-search-wrap">
+                    <input type="text" id="pacBuscar" placeholder="Buscar por apellido o DNI…"
+                           value="{% if turno %}{{ turno.paciente.apellido }}, {{ turno.paciente.nombre }}{% elif paciente_preselect %}{{ paciente_preselect.apellido }}, {{ paciente_preselect.nombre }}{% elif form %}{{ form.paciente_nombre or '' }}{% endif %}">
+                    <div class="pac-search-results" id="pacResults"></div>
+                </div>
+                <input type="hidden" name="paciente_id" id="pacienteId"
+                       value="{% if turno %}{{ turno.paciente_id }}{% elif paciente_preselect %}{{ paciente_preselect.id }}{% elif form %}{{ form.paciente_id or '' }}{% endif %}">
+            </div>
+
+            {# Médico y especialidad #}
+            <div class="tur-grid-2">
+                <div class="tur-fg">
+                    <label for="medico_id">Médico *</label>
+                    <select name="medico_id" id="medicoSel" required>
+                        <option value="">— Seleccioná —</option>
+                        {% for m in medicos %}
+                        <option value="{{ m.id }}"
+                            data-especialidades='{{ m.especialidades | map(attribute="id") | list | tojson }}'
+                            {% if turno and turno.medico_id == m.id %}selected
+                            {% elif form and form.medico_id == m.id|string %}selected{% endif %}>
+                            {{ m.user.full_name or m.user.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="tur-fg">
+                    <label for="especialidad_id">Especialidad</label>
+                    <select name="especialidad_id" id="especialidadSel">
+                        <option value="">— Seleccioná médico primero —</option>
+                        {% for m in medicos %}
+                            {% for esp in m.especialidades %}
+                            <option value="{{ esp.id }}"
+                                data-medico="{{ m.id }}"
+                                {% if turno and turno.especialidad_id == esp.id %}selected
+                                {% elif form and form.especialidad_id == esp.id|string %}selected{% endif %}>
+                                {{ esp.nombre }}
+                            </option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Fecha y hora #}
+            <div class="tur-grid-3">
+                <div class="tur-fg">
+                    <label for="fecha">Fecha *</label>
+                    <input type="date" name="fecha" id="fecha" required
+                           value="{% if turno %}{{ turno.fecha.isoformat() }}{% elif form %}{{ form.fecha or '' }}{% endif %}">
+                </div>
+                <div class="tur-fg">
+                    <label for="hora">Hora *</label>
+                    <input type="time" name="hora" id="hora" required
+                           value="{% if turno %}{{ turno.hora.strftime('%H:%M') }}{% elif form %}{{ form.hora or '' }}{% endif %}">
+                </div>
+                {% if accion == "Editar" %}
+                <div class="tur-fg">
+                    <label for="estado">Estado</label>
+                    <select name="estado" id="estado">
+                        {% for e in estados %}
+                        <option value="{{ e }}" {% if turno and turno.estado == e %}selected{% endif %}>{{ e|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+
+            {# Notas #}
+            <div class="tur-fg">
+                <label for="notas">Notas <span style="font-weight:400;text-transform:none;letter-spacing:0">(opc.)</span></label>
+                <textarea name="notas" id="notas" placeholder="Primera consulta, trae estudios, obra social…">{% if turno %}{{ turno.notas or '' }}{% elif form %}{{ form.notas or '' }}{% endif %}</textarea>
+            </div>
+
+            <div class="tur-actions">
+                <button type="submit" class="btn btn-primary">Guardar turno</button>
+                <a href="/turnos{% if turno %}/{{ turno.id }}{% endif %}" class="btn btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+// Médico → filtrar especialidades
+const medicoSel = document.getElementById('medicoSel');
+const espSel = document.getElementById('especialidadSel');
+const allOpts = Array.from(espSel.querySelectorAll('option[data-medico]'));
+const savedEsp = espSel.value;
+
+function filtrarEspecialidades() {
+    const mid = medicoSel.value;
+    allOpts.forEach(o => o.remove());
+    espSel.innerHTML = '<option value="">— Sin especialidad —</option>';
+    if (mid) {
+        allOpts.filter(o => o.dataset.medico === mid).forEach(o => espSel.appendChild(o));
+        if (savedEsp) espSel.value = savedEsp;
+    }
+}
+medicoSel.addEventListener('change', filtrarEspecialidades);
+filtrarEspecialidades();
+
+// Búsqueda de paciente
+const pacBuscar = document.getElementById('pacBuscar');
+const pacResults = document.getElementById('pacResults');
+const pacienteId = document.getElementById('pacienteId');
+let debounce;
+
+pacBuscar.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = pacBuscar.value.trim();
+    if (q.length < 2) { pacResults.classList.remove('open'); return; }
+    debounce = setTimeout(() => {
+        fetch(`/pacientes/buscar?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                pacResults.innerHTML = '';
+                if (!data.length) {
+                    pacResults.innerHTML = '<div class="pac-result-item" style="color:var(--text-muted)">Sin resultados</div>';
+                } else {
+                    data.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'pac-result-item';
+                        div.textContent = `${p.apellido}, ${p.nombre}${p.dni ? ' — DNI ' + p.dni : ''}`;
+                        div.addEventListener('click', () => {
+                            pacienteId.value = p.id;
+                            pacBuscar.value = `${p.apellido}, ${p.nombre}`;
+                            pacResults.classList.remove('open');
+                        });
+                        pacResults.appendChild(div);
+                    });
+                }
+                pacResults.classList.add('open');
+            });
+    }, 250);
+});
+
+document.addEventListener('click', e => {
+    if (!pacBuscar.contains(e.target) && !pacResults.contains(e.target))
+        pacResults.classList.remove('open');
+});
+</script>
+{% endblock %}

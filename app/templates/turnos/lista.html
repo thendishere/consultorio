@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Turnos — Consultorio de la Amistad{% endblock %}
+{% block content %}
+<div class="admin-layout">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Turnos</h1>
+            <p class="admin-subtitle">{{ total }} turno{% if total != 1 %}s{% endif %}{% if total_pages > 1 %} · página {{ page }} de {{ total_pages }}{% endif %}</p>
+        </div>
+        <a href="/turnos/crear" class="btn btn-primary">+ Nuevo turno</a>
+    </div>
+
+    {% if saved %}
+    <div class="alert alert-success"><span class="alert-icon">✓</span> Guardado correctamente.</div>
+    {% endif %}
+
+    <form method="get" class="filter-bar">
+        <input type="date" name="fecha" value="{{ fecha_filter }}" class="filter-input" style="flex:0 0 auto">
+        <select name="medico_id" class="filter-input" style="flex:1;min-width:0">
+            <option value="">Todos los médicos</option>
+            {% for m in medicos %}
+            <option value="{{ m.id }}" {% if medico_id_filter == m.id|string %}selected{% endif %}>
+                {{ m.user.full_name or m.user.username }}
+            </option>
+            {% endfor %}
+        </select>
+        <select name="estado" class="filter-input" style="flex:1;min-width:0">
+            <option value="">Todos los estados</option>
+            {% for e in estados %}
+            <option value="{{ e }}" {% if estado_filter == e %}selected{% endif %}>{{ e|capitalize }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline">Filtrar</button>
+        {% if fecha_filter or medico_id_filter or estado_filter %}
+        <a href="/turnos" class="btn btn-outline">✕ Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div class="admin-card">
+        {% if turnos %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Fecha y hora</th>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Especialidad</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in turnos %}
+                <tr>
+                    <td data-label="Fecha">
+                        <strong>{{ t.fecha.strftime('%d/%m/%Y') }}</strong>
+                        <span class="text-muted" style="margin-left:.4rem">{{ t.hora.strftime('%H:%M') }}</span>
+                    </td>
+                    <td data-label="Paciente">
+                        <a href="/pacientes/{{ t.paciente.id }}" class="link-primary">{{ t.paciente.apellido }}, {{ t.paciente.nombre }}</a>
+                    </td>
+                    <td data-label="Médico" class="text-muted">{{ t.medico.user.full_name or t.medico.user.username }}</td>
+                    <td data-label="Especialidad" class="text-muted">{{ t.especialidad.nombre if t.especialidad else '—' }}</td>
+                    <td data-label="Estado">
+                        <span class="estado-badge estado-{{ t.estado }}">{{ t.estado|capitalize }}</span>
+                    </td>
+                    <td data-label="">
+                        <div class="action-btns">
+                            <a href="/turnos/{{ t.id }}" class="btn btn-outline btn-xs">Ver</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <p>No hay turnos{% if fecha_filter or medico_id_filter or estado_filter %} para los filtros seleccionados{% endif %}.</p>
+            <a href="/turnos/crear" class="btn btn-primary" style="margin-top:.75rem">Agendar primer turno</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="/turnos?page={{ page - 1 }}{% if fecha_filter %}&fecha={{ fecha_filter }}{% endif %}{% if medico_id_filter %}&medico_id={{ medico_id_filter }}{% endif %}{% if estado_filter %}&estado={{ estado_filter }}{% endif %}" class="btn btn-outline btn-sm">← Anterior</a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="pagination-current">{{ p }}</span>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="/turnos?page={{ p }}{% if fecha_filter %}&fecha={{ fecha_filter }}{% endif %}{% if medico_id_filter %}&medico_id={{ medico_id_filter }}{% endif %}{% if estado_filter %}&estado={{ estado_filter }}{% endif %}" class="btn btn-outline btn-sm">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+            <span class="pagination-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="/turnos?page={{ page + 1 }}{% if fecha_filter %}&fecha={{ fecha_filter }}{% endif %}{% if medico_id_filter %}&medico_id={{ medico_id_filter }}{% endif %}{% if estado_filter %}&estado={{ estado_filter }}{% endif %}" class="btn btn-outline btn-sm">Siguiente →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
